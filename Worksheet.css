@@ -1,0 +1,199 @@
+
+table tr:nth-child(2n+2){
+    background-color:#F4F4F4;
+}
+
+body{
+    max-width: 900px;
+    margin: auto;
+}
+
+h1{
+    border-bottom-style: double;
+}
+
+h2{
+    border-bottom-style: ridge;
+}
+
+input[type=checkbox] + span {
+    opacity: .6;
+}
+
+input[type=checkbox]:checked + span {
+    opacity: 1;
+}
+
+.words{
+    padding-left: 40px;
+}
+
+a {
+    text-decoration: none;
+    color: cornflowerblue;
+}    
+
+a:visited {
+    color: cornflowerblue;
+}
+
+div.component{
+    padding-top: 20px;
+}
+
+.f-comp-title{
+    font-family: monospace;
+    font-size: x-large;
+}
+
+.f-el-title{
+    font-family: monospace;
+    font-size: large;
+    padding-left: 10px;
+}
+
+div{
+    transition: sliding-vertically 5s ease-in-out;
+}
+
+.component.valid .f-comp-status::before,
+.valid .f-el-title::before{
+    content: "\2713";
+    color: #0F0;
+}
+
+.component.invalid .f-comp-status::before,
+.requirement.invalid .f-el-title::before{
+    content: "\2715";
+    color: #F00;
+}
+
+
+.component.valid.optional .f-comp-status::before,
+.valid.optional .f-el-title::before{
+    content: "\2713";
+    color: #2626FF; 
+}
+
+.component.invalid.optional .f-comp-status::before,
+.requirement.invalid.optional .f-el-title::before{
+    content: "\2715";
+    color: #2626FF; 
+
+
+}
+
+.hidden {
+    display: none;
+}
+
+
+.disabled {
+    opacity: .2;
+    pointer-events: none;
+}
+
+.disabled .modcheckdiv{
+    display: none;
+}
+
+
+.disabled .f-comp-status{
+    display: none;
+}
+
+.warning{
+    text-align:center;
+    border-style: dashed;
+    border-width: medium;
+    border-color: red;
+}
+
+@media screen{
+    .hide.component .f-el-title{
+        display: none;
+    } 
+    
+    .hide.component .invalid.f-el-title{
+        display: none;
+    } 
+    
+    .hide.component .words{
+        display: none;
+    } 
+    
+    .component .f-comp-title::after{
+        display: inline-block;
+        height: auto;
+        content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8A\
+AAAPCAYAAAA71pVKAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAQOFAAEDhQGl\
+VDz+AAAAB3RJTUUH4gIXFDM7fhmr1wAAAfRJREFUKM+dkk9I02EYxz/P+25uurWR\
+tTkzI4NGl4jQgkq71K1DhnTQIDolRAQFQYSHTtGhU4e6eujQofBSFLOg0C4RUSjh\
+FnmqTTdKpj/mfv/eX4cUpmRYn9vz8v3w8D7PA/AWGADCbI4QcAb4AnAF8IBJEdX+\
+N0tEda40C4AHADviW1LFvpOX6+FwtAacVzqkGiWtwxo4F21OuPu7+yvxRNoDEhpY\
+cpzavkQyc7D76FCk+vN7j7VU6RdR4xAsikjGGP9FKrN3sPfEpajv2i2zhckR4JUG\
+UCr0erFavLkn2ytd2WPxcFOsZb74+SIQA0YPHBqIdB8Z6tChJv1m/N4P33OGAUsD\
+BIFxPNcOkq07jyeSbbo1tTu2q6vHEqU7D/ddSKcz2ZQJjBSmx925b9NjwEMAafha\
+eyQa/3Dq7O0243sCIEoRGAOA59nm5dM7OHVruzH+AkDjYEp23RrLT+U8Ub+fV0UR\
+oVyaMfVa9fqquF5GKX3ja2FCuc6yWbMipYNP755UgEdr8o2FMf5ivVYdKRfzRkRW\
+RfJTOc+2rWdAcUN5hdGP7x8viGgAXLvGbGFCKxW6tj74J3nOqVvP89M5V6kQ86UZ\
+f7lWvWWMt7Sp41VKb21uSfqnB++6kWi8BLTzL4ioq7H4tgC4z3/QAZSBxEaBXygN\
+v+jeFnAPAAAAAElFTkSuQmCC');
+        max-width: 15px;
+    }
+    
+    .hide.component .f-comp-title::after{
+   	content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8A\
+AAAPCAYAAAA71pVKAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAQOFAAEDhQGl\
+VDz+AAAAB3RJTUUH4gIXFC4BR3keeQAAAfZJREFUKM+d0k1PE1EUBuB37h2nQ+30\
+w5YObR0FhIppqBgWuDCaSBQjiQZNTIxLfoAkBHXh2vg7xID+ABPXBl3UdAMaN1CR\
+j5ZijZ22DKW9d44LP1KMROvZnMU5z+KcvBzAAgADwCdV1RzXlYQ26tYhrYM6u/qX\
+ATwCcKodrAOYv3z9IV28OuP6/NHPAGYZ45G/QQ5AAFjNbyzdTA2NewcGx7xeI5wu\
+FZenQOQQuasHncN/9IJo1sn+unkpbqVFIJhgydQo13VjDKCJSnnLBJAHUPoTBoA3\
+uzvlfiNgDhn+KMiVCB6xYCZSoaPHz5wrba/cbuztpBWFvQLI+R2DSGZqleKNuJX2\
+cVVjAIExDo/uV7pPjGhSNntrleI9+n7Ox33Y549Wq/ZWTyh8rNcfjPlaZ4xzZvUM\
+ezrNvnJ+fXFCiL2k2rpQq2wnAqH4tYjZFyZq/Y8CKZoim51z1nIZQ4jGNIC5fZhz\
+7fHA4JVuj26AyIWiMDSbdTi1L/T29RO7ahdfKgqbInJLANCKZ6Kx5J24dVowztW6\
+Y+8WNt91FNYXc4WN988BzAL4QOT+Aj/x8GFf+MHI+UlI2cBS9kVlLZfxSFdMS9GY\
+V1WtKETDPShhz85emLRHx++TETBLAJ4qCov8c7ajsZMr/5PtBQB3AXSpqsbagd8A\
+O+HMRUtPNsQAAAAASUVORK5CYII=');
+    }
+}
+@media print{
+    .warning-pane, BUTTON{
+        display: none;
+    }
+    .hide{
+        display: block;
+    }
+}
+
+#main{
+    margin-left:50px;
+}
+
+
+
+
+/* Tooltip text */
+.tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    
+    /* Position the tooltip text - see examples below! */
+
+    z-index: 1;
+    position: absolute;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltipped:hover .tooltiptext {
+    visibility: visible;
+}
+
+
