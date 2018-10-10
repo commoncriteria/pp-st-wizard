@@ -465,12 +465,14 @@ function setVisibility(elements, visibility){
     var aa;
     for(aa=0; elements.length>aa; aa++){
 	if(elements[aa].classList.contains('hidable')){
-	    if(visibility){
-		elements[aa].style.display=SHOW;
-	    }
-	    else{
-		elements[aa].style.display=HIDE;
-	    }
+	    modifyClass(elements[aa], "hidden", !visibility);
+
+	    // if(visibility){
+	    // 	elements[aa].style.display=SHOW;
+	    // }
+	    // else{
+	    // 	elements[aa].style.display=HIDE;
+	    // }
 	}
 	else{
 	    modifyClass(elements[aa], 'disabled', !visibility);
