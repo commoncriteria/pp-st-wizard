@@ -15,7 +15,8 @@ const PREAMBLE = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title></titl
     + "}\n"
     + "</style></head><body>\n";
 const EPILOGUE="</body></html>";
-
+const HIDE="none";
+const SHOW="block";
 const AMPERSAND=String.fromCharCode(38);
 const LT=String.fromCharCode(60);
 
@@ -25,13 +26,32 @@ var prefix="";
 /// Dictionary to hold all the cookies
 var cookieJar=[];
 
+
+//////////////////////////////////////////////////
+// Aliases
+//////////////////////////////////////////////////
+
+/**
+ * Aliases getElementsByClassName
+ */
+function elsByCls(classname){
+    return document.getElementsByClassName(classname);
+}
+
+/**
+ * Aliases getElementById
+ */
+function elById(id){
+    return document.getElementById(id);
+}
+
 //////////////////////////////////////////////////
 // Stolen from the regular PP project
 //////////////////////////////////////////////////
 
 // Expands targets if they are hidden
 function showTarget(id){
-    var element = document.getElementById(id);
+    var element = elById(id);
     while (element != document.body.rootNode ){
 	element.classList.remove("hide");
 	element = element.parentElement;
@@ -50,13 +70,12 @@ function showTarget(id){
  *    For its 1st parameter, it takes the element. For the 2nd
  *    it's the number of the element.
  */
-function performActionOnClass(classname, fun){
+function performActionOnElements(elements, fun){
     // Run through all the elements with possible
     // values
     var aa;
-    var elems = document.getElementsByClassName(classname);
-    for(aa=0; elems.length> aa; aa++){
-        fun(elems[aa], aa);
+    for(aa=0; elements.length> aa; aa++){
+        fun(elements[aa], aa);
     }
 }
 var prevCheckbox = false;
@@ -74,16 +93,17 @@ function getId(index){
     return "v_" + index;
 } 
 
-function retrieveBase(name){
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-	    pp_xml = xhttp.responseXML.documentElement
-        }
-    };
-    xhttp.open("GET", name, true);
-    xhttp.send();
-}
+
+// function retrieveBase(name){
+//     var xhttp = new XMLHttpRequest();
+//     xhttp.onreadystatechange = function() {
+//         if (this.readyState == 4 && this.status == 200) {
+// 	    pp_xml = xhttp.responseXML.documentElement
+//         }
+//     };
+//     xhttp.open("GET", name, true);
+//     xhttp.send();
+// }
 
 
 // elem is a component element
@@ -93,7 +113,7 @@ function handleEnter(elem){
     }
 
     var compsIter, comps;
-    comps = document.getElementsByClassName('component');
+    comps = elsByCls('component');
     for (compsIter=comps.length-1; compsIter>=0; compsIter--){
         if (comps[compsIter]==elem) continue;
         comps[compsIter].classList.add('hide');
@@ -137,22 +157,25 @@ function retrieveFromCookieJar(elem, index){
 
 function init(){
     if( document.URL.startsWith("file:///") ){
-        var warn = document.getElementById("url-warning");
-        warn.style.display='block';
+        var warn = elById("url-warning");
+        warn.style.display=SHOW;
     }
     var url = new URL(document.URL);
     prefix=url.searchParams.get("prefix");
     if (prefix==null) prefix="";
     cookieJar = readAllCookies();
-    performActionOnClass("val", retrieveFromCookieJar);
+    var elems = elsByCls("val");
+    performActionOnElements(elems, retrieveFromCookieJar);
     validateRequirements();
     handleEnter(null);
+    baseChange(null)
 }
 
-function resolver(pre){
-    if(pre=='cc') return 'https://niap-ccevs.org/cc/v1';
-    else return "http://www.w3.org/1999/xhtml";
-}
+
+// ##################################################
+// #               Cookie functions
+// ##################################################
+
 function readAllCookies() {
     ret=[];
     var ca = document.cookie.split(';');
@@ -191,11 +214,20 @@ function createCookie(name,value) {
 function eraseCookie(name) {
     createCookie(name,"",-1);
 }
+
+// ##################################################
+// #          Report Generating Functions
+// ##################################################
+function resolver(pre){
+    if(pre=='cc') return 'https://niap-ccevs.org/cc/v1';
+    else return "http://www.w3.org/1999/xhtml";
+}
+
 function fullReport(){
     var pp_xml = new DOMParser().parseFromString(atob(ORIG64), "text/xml");
     //- Fix up selections
     var xsels = pp_xml.evaluate("//cc:selectable", pp_xml, resolver, XPathResult.ANY_TYPE, null);
-    var hsels = document.getElementsByClassName('selbox');
+    var hsels = elsByCls('selbox');
     var hsindex = 0;
     var choosens = new Set();
     while(true){
@@ -224,7 +256,7 @@ function fullReport(){
         assignments[ctr] = xassign;
         ctr++;
     }
-    var hassigns = document.getElementsByClassName('assignment');
+    var hassigns = elsByCls('assignment');
     for(ctr = 0; hassigns.length>ctr; ctr++){
         if(hassigns[ctr].value){
             assignments[ctr].setAttribute("val", hassigns[ctr].value);
@@ -233,7 +265,7 @@ function fullReport(){
 
     //- Fix up components
     var xcomps = pp_xml.evaluate("//cc:f-component|//cc:a-component", pp_xml, resolver, XPathResult.ANY_TYPE, null);
-    var hcomps = document.getElementsByClassName('component');
+    var hcomps = elsByCls('component');
     var disableds = new Set();
     for(ctr=0; hcomps.length>ctr; ctr++){
         var xcomp = xcomps.iterateNext();
@@ -270,7 +302,7 @@ function fullReport(){
     // A little more complicated than it should be b/c
     // Chrome has a max string size.
     var htmlReport = transform(xsl, pp_xml, document);
-    var rNode = document.getElementById('report-node');
+    var rNode = elById('report-node');
     // Clear its children
     while(rNode.firstChild){
 	rNode.removeChild( rNode.firstChild );
@@ -289,7 +321,7 @@ function generateReport(){
     var report = LT+"?xml version='1.0' encoding='utf-8'?>\n"
     var aa;
     report += LT+"report xmlns='https://niap-ccevs.org/cc/pp/report/v1'>"
-    var kids = document.getElementsByClassName('requirement');
+    var kids = elsByCls('requirement');
     var isInvalid = false;
     for(aa=0; kids.length>aa; aa++){
         if( kids[aa].classList.contains("invalid") ){
@@ -330,6 +362,7 @@ function getRequirement(node){
     var ret = ""
     // If it's an element
     if(node.nodeType==1){
+	// If the previous was a checkbox
         if(isPrevCheckbox(node)){
             return "";
         }
@@ -421,107 +454,87 @@ function chooseMe(sel){
     // Toggle all the checkboxes (except the one that was selected)
     toggleFirstCheckboxExcept(common, sel);
 }
-function qq(msg){
-    console.log(msg);
-}
 
-function baseChange(changed){
-    if( changed.checked ){
-	//-- Uncheck the other bases
-	var basechecks = document.getElementsByClassName('basecheck');
-	for(aa=basechecks.length-1;  aa>=0; aa--){
-	    if(changed!=basechecks[aa]){
-		basechecks[aa].checked=false;
+// ##################################################
+// #         
+// ################################################## 
+function setVisibility(elements, visibility){
+    var aa;
+    for(aa=0; elements.length>aa; aa++){
+	if(elements[aa].classList.contains('hidable')){
+	    if(visibility){
+		elements[aa].style.display=SHOW;
+	    }
+	    else{
+		elements[aa].style.display=HIDE;
+	    }
+	}
+	else{
+	    if(visibility){
+		elements[aa].classList.remove('disabled')
+	    }
+	    else{
+		elements[aa].classList.add('disabled')
 	    }
 	}
     }
-    updateConfig();
 }
 
-function updateConfig(){
-    var basechecks = document.getElementsByClassName('basecheck');
-    var selected=null;
-    for(aa=basechecks.length-1;  aa>=0; aa--){
-	if(basechecks[aa].checked){
-	    showPossibleModules(basechecks[aa]);
-	    showRequirements(basechecks[aa].id.split(":")[1])
-	    return;
-	}
+function hideAllDependents(classname){
+    var aa;
+    var masters = elsByCls(classname);
+    for(aa=masters.length-1; aa>=0; aa--){
+	var id = masters[aa].id.split(":")[1];
+	setVisibility(elsByCls("dep:"+id), false);
     }
-    //-- Only make it here if there are no bases
-    showRequirements("none");
-    document.getElementById("ws_mods").classList.add("disabled");
+    return masters;
 }
-
-
-function showRequirements(ppId){
-    var baseReqs = document.getElementsByClassName("base_reqs");
-    var aa=0;
-    for(aa=baseReqs.length-1; aa>=0; aa--){
-	if( baseReqs[aa].id== "gg_base:"+ppId){
-	    baseReqs[aa].classList.remove("hidden");
-	}
-	else{
-	    baseReqs[aa].classList.add("hidden");
-	}
-    }
-}
-
-function showPossibleModules(basecheck){
-    var modline=basecheck.getAttribute('data-mods').replace(/ /g, "_");
-    qq("After replace: " +modline);
-    var validMods = new Set(modline.split(","));
-    qq("The okay ones are " + basecheck.getAttribute('data-mods'));
-    var aa=0;
-    var modchecks = document.getElementsByClassName("modcheck");
-    for(aa=modchecks.length-1; aa>=0; aa--){
-	var modcheck=modchecks[aa];
-	qq("Looking for "+ modchecks[aa].id.split(":")[1]);
-	if( validMods.has( modchecks[aa].id.split(":")[1]) ){
-	    modchecks[aa].parentNode.classList.remove("hidden");
-	}
-	else{
-	    modchecks[aa].parentNode.classList.add("hidden");
-	}
-    }
-    document.getElementById('ws_mods').classList.remove('disabled');
-}
-
-    // 	var modSet = new Set(modIds)
-    // 	//-- Show the right modules
-    // 	for(aa=modchecks.length-1;  aa>=0; aa--){ // Run through the modchecks
-    // 	    modifyClass(modchecks[aa].parentElement, "hidden", !modSet.has(modchecks[aa].id));
-    // 	}
-    // 	//-- We're ready to select modules
-    // 	modifyClass(document.getElementById('ws_mods'), "disabled", false);
-    // }
-    // else{
-    // 	//-- Hide all modules
-    // 	for(aa=modchecks.length-1;  aa>=0; aa--){
-    // 	    modchecks[aa].parentElement.classList.add("hidden");
-    // 	}
-    // 	//-- No base, no modules
-    // 	modifyClass(document.getElementById('ws_mods'), "disabled", true);
-    // }
 
 /**
- * This is only called when it's explicitly clicked
+ * baseChange handler
+ * @changed is the element that changed or null for init.
  */
-function modChange(changed){
-    qq("Id of changed: " + changed.id);
-    var reqs = document.getElementById("d:"+changed.id)
-    if(changed.checked){
-	reqs.classList.remove("hidden");
+function baseChange(changed){
+    // Hide everything that's dependent on bases
+    var basechecks = hideAllDependents('basecheck')
+    // If it's checked
+    if( changed!=null && changed.checked ){
+	var aa;
+	//-- Uncheck the other bases
+	for(aa=basechecks.length-1;  aa>=0; aa--){
+	    // If it's not check
+	    if(changed!=basechecks[aa]){
+	    	basechecks[aa].checked=false;
+	    }
+	}
+	var baseId = changed.id.split(":")[1];
+	setVisibility(elsByCls("dep:"+baseId),true);
     }
-    else{
-	reqs.classList.add("hidden");
+
+    // Trigger module change
+    moduleChange();
+}
+
+
+function moduleChange(){
+    var modchecks = hideAllDependents("modcheck");
+    var aa;
+    for(aa=modchecks.length-1; aa>=0; aa--){
+	if(modchecks[aa].checked){
+	    var modId = modchecks[aa].id.split(":")[1];
+	    setVisibility(elsByCls("dep:"+modId), true);
+	}
     }
 }
+
+
+
+
 
 var selbasedCtrs={}
 
 function areAnyMastersSelected(id){
-    var masters = document.getElementsByClassName(id+"_m");
+    var masters = elsByCls(id+"_m");
     var bb;
     for(bb=0; masters.length>bb; bb++){
         if (masters[bb].checked){
@@ -564,8 +577,8 @@ function updateDependency(root, ids){
         var enabled = areAnyMastersSelected(ids[aa]);
         // We might need to recur on these if the selection-based
         // requirement had a dependent selection-based requirement.
-        modifyClass( document.getElementById(ids[aa]), "disabled", !enabled);
-        var sn_s = document.getElementsByClassName(ids[aa]);
+        modifyClass( elById(ids[aa]), "disabled", !enabled);
+        var sn_s = elsByCls(ids[aa]);
         for(bb=0; sn_s.length>bb; bb++){
             modifyClass(sn_s[bb], "disabled", !enabled)
         }
@@ -618,7 +631,7 @@ function handleKey(event){
     if(! event.ctrlKey ) return;
     var key = event.which || event.keyCode;
     var curr = document.activeElement;
-    var comps = document.getElementsByClassName('component');
+    var comps = elsByCls('component');
     if (comps.length == 0) return;
     if (curr==document.body){
         curr=null;
@@ -683,7 +696,7 @@ function reqValidator(elem){
 
 function validateRequirements(){
     var aa;
-    var reqs = document.getElementsByClassName('requirement');
+    var reqs = elsByCls('requirement');
     for(aa=0; reqs.length > aa; aa++){
         if(reqValidator(reqs[aa])){
             addRemoveClasses(reqs[aa],'valid','invalid');
@@ -692,7 +705,7 @@ function validateRequirements(){
             addRemoveClasses(reqs[aa],'invalid','valid');
         }
     }
-    var components = document.getElementsByClassName('component');
+    var components = elsByCls('component');
     for(aa=0; components.length > aa; aa++){
         if(components[aa].getElementsByClassName('invalid').length == 0 ){
             addRemoveClasses(components[aa],'valid','invalid');
@@ -701,19 +714,6 @@ function validateRequirements(){
             addRemoveClasses(components[aa],'invalid','valid');
         }
     }
-}
-
-function addRemoveClasses(elem, addClass, remClass){
-    elem.classList.remove(remClass);
-    elem.classList.add(addClass);
-}
-
-function delayedUpdate(){
-    performActionOnClass("val", saveToCookieJar);
-    saveAllCookies(cookieJar);
-
-    validateRequirements();
-    sched = undefined;
 }
 
 /**
@@ -748,6 +748,21 @@ function toggle(descendent) {
     modifyClass( descendent.parentNode, 'hide', isAddHide);
 }
 
+
+function addRemoveClasses(elem, addClass, remClass){
+    elem.classList.remove(remClass);
+    elem.classList.add(addClass);
+}
+
+function delayedUpdate(){
+    var elems = elsByCls("val");
+    performActionOnElements(elems, saveToCookieJar);
+    saveAllCookies(cookieJar);
+
+    validateRequirements();
+    sched = undefined;
+}
+
 function transform(xsl, xml, owner){
     // code for IE
     if (window.ActiveXObject ){
@@ -761,12 +776,22 @@ function transform(xsl, xml, owner){
     }
 }
 
+// ##################################################
+// #          Logging things
+// ##################################################
+function qq(msg){
+    console.log(msg);
+}
+
 function logit(val){
     if( prefix=='debug'){
 	console.log(val);
     }
 }
 
+// ##################################################
+// #         Blob Builder
+// ##################################################
 // Took this from stack overflow
 var MyBlobBuilder = function() {
   this.parts = [];

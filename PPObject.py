@@ -3,10 +3,29 @@ import xml.etree.ElementTree as ET
 import sys
 from xml.sax.saxutils import escape
 
+# JavaScript naming convensions
+# ${ID}=Name of PP with spaces replaced with underscores
+# Base checkboxes:
+#  bases:${ID}
+# Module checkboxes:
+#  mods:${ID}
+
+# Things that are dependents of a base or module(if they're checked they appear):
+#     dep:${ID}
+#
+
+
+
+
 PPNS='https://niap-ccevs.org/cc/v1'
 HTMNS="http://www.w3.org/1999/xhtml"
 ns={"cc":PPNS, "htm":HTMNS}
 
+def translateToId(name):
+    return name.replace(" ", "_")
+    
+def translateToName(id):
+    return id.replace("_", " ")
 
 
 def cc(tag):
@@ -18,7 +37,9 @@ def htm(tag):
     return "{"+HTMNS + "}"+tag
 
 def attr(el,at):
-    """ Non exception throwing way to ask for attributes. No attribute is returned as empty string """
+    """ Non exception throwing way to ask for attributes. 
+    No attribute is returned as empty string 
+    """
     if at in el.attrib: 
         return el.attrib[at]
     return ""
@@ -48,7 +69,18 @@ class PP:
         self.parent_map = {c:p for p in self.root.iter() for c in p}
         # Used to run 'getElementByClassname'
         self.create_classmapping()
+        # Grab out name and make it an id
+        self.id = translateToId(theroot.attrib["name"])
+
+        # # Holds the name of the base that the components apply to
+        # # if they are not specific to a specific base, it's empty
+        # self.baseName=""
+
+        # Make mappings to selections
         self.makeSelectionMap()
+
+    def get_js_representation(self):
+        return "";
 
     def up(self, node):
         return self.parent_map[node]
@@ -156,12 +188,8 @@ class PP:
         return ret+"</span>"
 
     def handle_cc_node(self, node, show_text):
-        print("Handling cc_node"+ node.tag)
-
-
-        if node.find( cc("base-pp") ) != None :
-            ret = self.handle_contents(node, show_text)
-            return ret
+        if node.tag == cc("base-pp"):
+            return self.handle_base(node)
 
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
@@ -226,31 +254,7 @@ class PP:
         #     return self.handle_contents( node.find( 'cc:title', ns), True)
 
         elif node.tag == cc("f-component") or node.tag == cc("a-component"):
-            status= attr(node,"status")
-            ret=""
-            id=node.attrib["id"]
-            tooltip=""
-            if status == "optional" or status == "objective":
-                ret+="<div class='tooltipped'>"
-                ret+="<input type='checkbox' onchange='modifyClass(this.nextSibling, \"disabled\", !this.checked)'></input>"
-                tooltip="<span class='tooltiptext'>"+status+"</span>"
-                ret+="</div>\n"
-
-            ret+= "<span id='"+id+"'"
-            # ret = "<div onfocusin='handleEnter(this)' id='"+id+"'"
-            # The only direct descendants are possible should be the children
-            node.findall( 'cc:selection-depends', ns)
-            ret+=" class='component"
-            if status!="":
-                ret+=" disabled"
-            ret+="'>"
-            #<a href='#"+id+"'>
-            ret+="<span class='f-comp-status'></span><a onclick='toggle(this); return false;' href='#"+id+"' class='f-comp-title'>"+id.upper()+" &#8212; "+ node.attrib["name"]+"</a>"
-            ret+=tooltip
-            ret+="\n<div class='reqgroup'>\n"
-            ret+=self.handle_contents(node, False)
-            ret+="\n</div></span><!-- End: "+id+" --><br/>"
-            return ret
+            return self.handle_component(node)
         elif node.tag == cc("title"):
             self.selectables_index=0
             req_id = self.up(node).attrib['id']
@@ -267,6 +271,49 @@ class PP:
         else:
             return self.handle_contents(node, show_text)
         return ""
+
+    def handle_base(self, node):
+        # for sfr in node.find("cc:modified-sfrs", ns)
+        safeId= translateToId(node.attrib["name"])
+        ret = "<div "
+        ret += "id='"+self.id+":"+safeId+"' "
+        ret += "class='dep:"+safeId+"'>"
+        ret += self.handle_contents(node, False)
+        ret += "</div><!--End dep:"+safeId+" -->\n"
+        return ret
+
+    def handle_component(self, node):
+        status= attr(node,"status")
+        ret=""
+        id=node.attrib["id"]
+        tooltip=""
+        if status == "optional" or status == "objective":
+            ret+="<span class='tooltipped'>"
+            ret+="<input type='checkbox' onchange='modifyClass(this.nextSibling, \"disabled\", !this.checked)'></input>"
+            tooltip="<span class='tooltiptext'>"+status+"</span>"
+            ret+="</span>\n"
+
+        ret+= "<span id='"+id+"'"
+        # ret = "<div onfocusin='handleEnter(this)' id='"+id+"'"
+        # The only direct descendants are possible should be the children
+        node.findall( 'cc:selection-depends', ns)
+        ret+=" class='component"
+        if status!="":
+            ret+=" disabled"
+        ret+="'>"
+        #<a href='#"+id+"'>
+
+        # The toggle(this
+        ret+="""<span class='f-comp-status'></span>
+                <a onclick='toggle(this); return false;' href='#"+id+"' class='f-comp-title'>"""
+        ret+=id.upper()+" &#8212; "+ node.attrib["name"]+"</a>"
+        ret+=tooltip
+        ret+="\n<div class='reqgroup'>\n"
+        ret+=self.handle_contents(node, False)
+        ret+="\n</div></span><!-- End: "+id+" --><br/>"
+        return ret
+
+
 
 
     def handle_node(self, node, show_text):           
