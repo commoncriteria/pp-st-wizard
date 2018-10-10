@@ -77,13 +77,11 @@ class PPMap:
         for mod in PPMap.allmods:
             name=mod.attrib["name"]
             id=PPObject.translateToId(name)
-            out.write("<div class='modcheckdiv")
+            out.write("<div class='hidable modcheckdiv")
             for base in mod.findall(".//cc:base-pp",  PPObject.ns):
                 out.write(" dep:")
                 out.write(PPObject.translateToId(base.attrib["name"]))
             out.write("'>")
-
-
             out.write("<input type='checkbox' class='modcheck' onchange='moduleChange()' id='mods:"+id+"'></input>")
             out.write(name + "</div>\n")
         out.write("</div>") # Ends ws_mods

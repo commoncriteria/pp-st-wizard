@@ -289,7 +289,7 @@ class PP:
         tooltip=""
         if status == "optional" or status == "objective":
             ret+="<span class='tooltipped'>"
-            ret+="<input type='checkbox' onchange='modifyClass(this.nextSibling, \"disabled\", !this.checked)'></input>"
+            ret+="<input type='checkbox' onchange='handleOCheck(this); return false;'></input>"
             tooltip="<span class='tooltiptext'>"+status+"</span>"
             ret+="</span>\n"
 

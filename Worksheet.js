@@ -315,12 +315,15 @@ function fullReport(){
     initiateDownload('FullReport.html', myBlobBuilder.getBlob("text/html"));
 }
 
+function gatherAllAppliedRequirements(){
+}
 
 
 function generateReport(){
     var report = LT+"?xml version='1.0' encoding='utf-8'?>\n"
     var aa;
     report += LT+"report xmlns='https://niap-ccevs.org/cc/pp/report/v1'>"
+
     var kids = elsByCls('requirement');
     var isInvalid = false;
     for(aa=0; kids.length>aa; aa++){
@@ -470,12 +473,7 @@ function setVisibility(elements, visibility){
 	    }
 	}
 	else{
-	    if(visibility){
-		elements[aa].classList.remove('disabled')
-	    }
-	    else{
-		elements[aa].classList.add('disabled')
-	    }
+	    modifyClass(elements[aa], 'disabled', !visibility);
 	}
     }
 }
@@ -516,11 +514,20 @@ function baseChange(changed){
 }
 
 
+function isVisible(el){
+// A trick documented here:
+// https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+    return el.offsetParent != null
+}
+
 function moduleChange(){
     var modchecks = hideAllDependents("modcheck");
     var aa;
     for(aa=modchecks.length-1; aa>=0; aa--){
-	if(modchecks[aa].checked){
+
+	// 
+	if(isVisible(modchecks[aa]) &&  
+	   modchecks[aa].checked){
 	    var modId = modchecks[aa].id.split(":")[1];
 	    setVisibility(elsByCls("dep:"+modId), true);
 	}
@@ -556,6 +563,17 @@ function modifyMany( arrayOrElement, clazz, isAdd){
     }
 }
 
+/**
+ * Handles when the checkbox infront of an objective or optional
+ * requirements is checked.
+ */
+function handleOCheck(el){
+    modifyClass(el.parentElement.nextElementSibling, "disabled", !el.checked);
+}
+
+/**
+ * Adds/Removes a specific class from an element.
+ */
 function modifyClass( el, clazz, isAdd ){
     if(el == null){ return false;   }
     if(isAdd) el.classList.add(clazz);
