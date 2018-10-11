@@ -589,11 +589,12 @@ function modifyClass( el, clazz, isAdd ){
  * This design does not account for cascading dependent components .
  * There are none currently, so this limitation is acceptable.
  */
-function updateDependency(root, ids){
+function updateDependency(ids){
     var aa, bb;
 
     // Run through all 
     for(aa=0; ids.length>aa; aa++){     
+	qq("Updating all things that depend on "+ids[aa]);
         var enabled = areAnyMastersSelected(ids[aa]);
         // We might need to recur on these if the selection-based
         // requirement had a dependent selection-based requirement.

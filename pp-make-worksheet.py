@@ -48,13 +48,13 @@ class PPMap:
         out.write("<div id='ws_base'>")
         out.write("<h3>Select the Base Protection Profile:</h3>")
         modsec=""
-        for name in PPMap.baseToMods:
+        for name in sorted(PPMap.baseToMods):
             map=PPMap.baseToMods[name]
             if map.base == None:
                 sys.err.print("Some module modifies an unknown base: "+name)
                 del PPMap.baseToMods[name]
                 continue
-            id=PPObject.translateToId(name)
+            id=PPObject.to_id(name)
             # THis will break if modules have a double quote in their name
             # Probably no risk of that.
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
@@ -70,26 +70,26 @@ class PPMap:
         
         for base in PPMap.baseToMods:
             out.write(" dep:")
-            out.write(PPObject.translateToId(base))
+            out.write(PPObject.to_id(base))
         out.write("'>")
-        out.write("<h3>Select All Applicable Modules</h3>")
+        out.write("<h3>Select All Applicable Modules</h3>\n")
         # Run through all modules
         for mod in PPMap.allmods:
             name=mod.attrib["name"]
-            id=PPObject.translateToId(name)
+            id=PPObject.to_id(name)
             out.write("<div class='hidable modcheckdiv")
             for base in mod.findall(".//cc:base-pp",  PPObject.ns):
                 out.write(" dep:")
-                out.write(PPObject.translateToId(base.attrib["name"]))
+                out.write(PPObject.to_id(base.attrib["name"]))
             out.write("'>")
             out.write("<input type='checkbox' class='modcheck' onchange='moduleChange()' id='mods:"+id+"'></input>")
             out.write(name + "</div>\n")
         out.write("</div>") # Ends ws_mods
 
         # Run through all the bases
-        for name in PPMap.baseToMods:
+        for name in sorted(PPMap.baseToMods):
             map=PPMap.baseToMods[name]
-            id=PPObject.translateToId(name)
+            id=PPObject.to_id(name)
             out.write("<div class='hidable dep:"+id+"' id='base:"+id+"'>");
             out.write("<h3>"+name+"</h3>")
             obj = PPObject.PP(map.base)
@@ -98,7 +98,7 @@ class PPMap:
 
         # Run through all the modules
         for mod in PPMap.allmods:
-            id=PPObject.translateToId(mod.attrib["name"])
+            id=PPObject.to_id(mod.attrib["name"])
             out.write("<div class='hidable dep:"+id + "'>");
             out.write("<h3>"+mod.attrib["name"]+"</h3>")
             obj = PPObject.PP(mod)
@@ -131,14 +131,18 @@ if __name__ == "__main__":
     with open(xslfile, "rb") as in_handle:
         xslb64 = base64.b64encode(in_handle.read()).decode('ascii')
 
+    #- Run through the rest of the inputs
     for inIndex in range(5, len(sys.argv)):
         root = ET.parse(sys.argv[inIndex]).getroot()
         bases = root.findall( ".//cc:base-pp", PPObject.ns)
+        
         if len( bases ) > 0:
             PPMap.add_mod(root, bases)
-        else:
+        elif root.tag == PPObject.cc("PP"):
             ppmap = PPMap.get_pp_map(root.attrib["name"])
             ppmap.base= root
+        elif root.tag == PPObject.cc("technical-decisions"):
+            print("Handling a technical decision")
 
     with open(outfile, "w") as out:
         out.write(
@@ -170,9 +174,10 @@ if __name__ == "__main__":
 </div>
     """)
         PPMap.build_worksheet(out)
+        # Make sure a base is selected to show the buttons
         out.write("<div class='")
         for base in PPMap.baseToMods:
-            out.write("dep:"+PPObject.translateToId(base)+" ")
+            out.write("dep:"+PPObject.to_id(base)+" ")
         out.write( """'>
          <button type="button" onclick="generateReport()">XML Record</button>
          <button type="button" onclick="fullReport()">HTML Report</button>

@@ -21,10 +21,17 @@ PPNS='https://niap-ccevs.org/cc/v1'
 HTMNS="http://www.w3.org/1999/xhtml"
 ns={"cc":PPNS, "htm":HTMNS}
 
-def translateToId(name):
-    return name.replace(" ", "_")
+# Might need to fix this up. Lots of 
+# our IDs have parenthesis which are not technically legal.
+# Also one has a caret.
+def to_id(name):
+    ret = name.replace("_", "__")
+    ret = ret.replace("(", "_l")
+    ret = ret.replace(")", "_r")
+    ret = ret.replace("^", "_c")
+    return ret.replace(" ", "_")
     
-def translateToName(id):
+def to_name(id):
     return id.replace("_", " ")
 
 
@@ -70,14 +77,12 @@ class PP:
         # Used to run 'getElementByClassname'
         self.create_classmapping()
         # Grab out name and make it an id
-        self.id = translateToId(theroot.attrib["name"])
-
-        # # Holds the name of the base that the components apply to
-        # # if they are not specific to a specific base, it's empty
-        # self.baseName=""
-
+        self.id = to_id(theroot.attrib["name"])
         # Make mappings to selections
         self.makeSelectionMap()
+
+    def make_id(self, localId):
+        return self.id+":"+localId
 
     def get_js_representation(self):
         return "";
@@ -160,9 +165,11 @@ class PP:
             classes=""
             if attr(child,"exclusive") == "yes":
                 onChange+="chooseMe(this);"
-            id=attr(child,"id")
+            id=""
+            if "id" in child.attrib:
+                id = self.make_id(child.attrib["id"])
             if id!="" and id in self.selMap:
-                onChange+="updateDependency(this,"
+                onChange+="updateDependency("
                 delim="["
                 for sel in self.selMap[id]:
                     classes+=" "+sel+"_m"
@@ -240,7 +247,7 @@ class PP:
             prefix=ctrtype+" "
             if "pre" in node.attrib:
                 prefix=node.attrib["pre"]
-            idAttr=node.attrib["id"]
+            idAttr=self.make_id(node.attrib["id"])
             ret="<span class='ctr' data-myid='"+idAttr+"+data-counter-type='ct-"
             ret+=ctrtype+"' id='cc-"+idAttr+"'>\n"
             ret+=prefix
@@ -257,16 +264,15 @@ class PP:
             return self.handle_component(node)
         elif node.tag == cc("title"):
             self.selectables_index=0
-            req_id = self.up(node).attrib['id']
-            com_id = self.up(self.up(node)).attrib['id']
-            slaves = self.up(self.up(node)).findall( 'cc:selection-depends', ns)
+            ccid = self.up(node).attrib['id']
+            id=self.make_id(to_id(ccid))
             ret=""
-            ret+="<div id='"+ req_id +"' class='requirement'>"
-            ret+="<div class='f-el-title'>"+req_id.upper()+"</div>"
+            ret+="<div id='"+ id +"' class='requirement'>"
+            ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
             ret+="<div class='words'>"
             ret+=self.handle_contents(node, True)
             ret+="</div>\n"
-            ret+="</div><!-- End: "+req_id+" -->\n"
+            ret+="</div><!-- End: "+id+" -->\n"
             return ret
         else:
             return self.handle_contents(node, show_text)
@@ -274,7 +280,7 @@ class PP:
 
     def handle_base(self, node):
         # for sfr in node.find("cc:modified-sfrs", ns)
-        safeId= translateToId(node.attrib["name"])
+        safeId= self.make_id(to_id(node.attrib["name"]))
         ret = "<div "
         ret += "id='"+self.id+":"+safeId+"' "
         ret += "class='dep:"+safeId+"'>"
@@ -284,8 +290,9 @@ class PP:
 
     def handle_component(self, node):
         status= attr(node,"status")
+        ccid=node.attrib["id"]
+        id=self.make_id(to_id(ccid))
         ret=""
-        id=node.attrib["id"]
         tooltip=""
         if status == "optional" or status == "objective":
             ret+="<span class='tooltipped'>"
@@ -296,7 +303,8 @@ class PP:
         ret+= "<span id='"+id+"'"
         # ret = "<div onfocusin='handleEnter(this)' id='"+id+"'"
         # The only direct descendants are possible should be the children
-        node.findall( 'cc:selection-depends', ns)
+        # What is this for
+        # node.findall( 'cc:selection-depends', ns)
         ret+=" class='component"
         if status!="":
             ret+=" disabled"
@@ -306,7 +314,7 @@ class PP:
         # The toggle(this
         ret+="""<span class='f-comp-status'></span>
                 <a onclick='toggle(this); return false;' href='#"+id+"' class='f-comp-title'>"""
-        ret+=id.upper()+" &#8212; "+ node.attrib["name"]+"</a>"
+        ret+=ccid.upper()+" &#8212; "+ node.attrib["name"]+"</a>"
         ret+=tooltip
         ret+="\n<div class='reqgroup'>\n"
         ret+=self.handle_contents(node, False)
@@ -358,11 +366,12 @@ class PP:
         Results are stored in self.selMap
         @returns nothing
         """
-        for element in self.root.findall( 'cc:selection-depends', ns):
+        for element in self.root.findall( './/cc:selection-depends', ns):
             # req=element.attrib["req"]
             selIds=element.attrib["ids"]
-            slaveId=self.up(element).attrib["id"]
-            for selId in selIds.split(','):
+            slaveId=self.make_id(to_id(self.up(element).attrib["id"]))
+            for rawSelId in selIds.split(','):
+                selId = self.make_id(to_id(rawSelId))
                 reqs=[]
                 if selId in self.selMap:
                     reqs =self.selMap[selId]
