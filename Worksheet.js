@@ -445,6 +445,7 @@ function initiateDownload(filename, blob) {
 }
 /**
  * Handler for unchecking every other checkbox in a group besides this one.
+ * @param sel Is the checkbox that was checked
  */
 function chooseMe(sel){
     // Find the common parent
@@ -738,16 +739,22 @@ function validateRequirements(){
 }
 
 /**
- * @param exc Is the except element
+ * @param exc Is the checkbox that the action happened on
  */
 function toggleFirstCheckboxExcept(root, exc){
+    // If it's the exception just return
     if (root == exc) return;
+    // If root is a checkbox
     if ( isCheckbox(root)){
         if( exc.checked ){
             root.disabled=true;
+	    // Set the checkbox itself to disabled
             root.classList.add('disabled');
+	    // Set the text after the checkbox to disabled
             root.nextSibling.classList.add('disabled');
+	    // Uncheck the others
             root.checked=false;
+	    // Must update that we unchecked something... 
         }
         else{
             root.disabled=false;
