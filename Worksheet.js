@@ -154,6 +154,10 @@ function retrieveFromCookieJar(elem, index){
         }
     }
 }
+function killFade(){
+    var fp = elById("fade-pane");
+    fp.parentNode.removeChild(fp);
+}
 
 function init(){
     if( document.URL.startsWith("file:///") ){
@@ -167,6 +171,7 @@ function init(){
     }
     else{
 	fp.style.opacity = '0';
+	setTimeout(killFade, 2000);
     }
     prefix=url.searchParams.get("prefix");
     if (prefix==null) prefix="";
