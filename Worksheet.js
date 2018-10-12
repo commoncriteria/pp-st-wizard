@@ -557,7 +557,6 @@ function moduleChange(){
     var modchecks = hideAllDependents("modcheck");
     var aa;
     for(aa=modchecks.length-1; aa>=0; aa--){
-
 	// 
 	if(isVisible(modchecks[aa]) &&  
 	   modchecks[aa].checked){
@@ -567,11 +566,6 @@ function moduleChange(){
     }
 }
 
-
-
-
-
-var selbasedCtrs={}
 
 function areAnyMastersSelected(id){
     var masters = elsByCls(id+"_m");
@@ -737,7 +731,6 @@ function handleHelpRequest(){
     else{
 	helppane.style.display='none';
     }
-
 }
 
 function reqValidator(elem){
@@ -875,7 +868,7 @@ function logit(val){
 }
 
 // ##################################################
-// #         Blob Builder
+// #         Blob the Builder
 // ##################################################
 // Took this from stack overflow
 var MyBlobBuilder = function() {

@@ -197,10 +197,14 @@ class PP:
     def handle_cc_node(self, node, show_text):
         if node.tag == cc("base-pp"):
             return self.handle_base(node)
+        elif node.tag == cc("modified-sfrs"):
+            return self.handle_mod(node)
         elif node.tag == cc("opt-sfrs"):
             return self.handle_opt_obj(node, "optional")
         elif node.tag == cc("obj-sfrs"):
             return self.handle_opt_obj(node, "objective")
+        elif node.tag == cc("sel-sfrs"):
+            return self.handle_opt_obj(node, "selbased")
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
 
@@ -284,7 +288,6 @@ class PP:
         return ret
 
     def handle_base(self, node):
-        # for sfr in node.find("cc:modified-sfrs", ns)
         safeId= self.make_id(to_id(node.attrib["name"]))
         ret = "<div "
         ret += "id='"+self.id+":"+safeId+"' "
@@ -292,6 +295,10 @@ class PP:
         ret += self.handle_contents(node, False)
         ret += "</div><!--End dep:"+safeId+" -->\n"
         return ret
+
+    def handle_mod(self, node):
+        print("Size is "+str(len(node.findall('.//cc:subsection', ns))))
+        return "<div class='mod_sfrs'>"+self.handle_contents(node, False)+"</div>"
 
 
     def handle_opt_obj(self, node, status):
@@ -361,12 +368,10 @@ class PP:
     def handle_contents(self, node, show_text):
         ret=""
         if show_text:
-            if node.text:
-                ret = escape(node.text)
+            if node.text: ret = escape(node.text)
             for child in node:
                 ret+=self.handle_node(child, show_text)
-                if child.tail:
-                    ret+=child.tail
+                if child.tail: ret+=child.tail
         else:
             for child in node:
                 ret+=self.handle_node(child, show_text)

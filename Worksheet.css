@@ -50,9 +50,9 @@ a {
     font-size:xx-large;
     border-radius: 25px;
     padding: 40;
-    opacity: 0.7;
-    -webkit-transition: opacity 2000ms linear;
-    transition: opacity 2000ms linear;
+    opacity: 1;
+    -webkit-transition: opacity 1500ms linear;
+    transition: opacity 1500ms linear;
 }
 
 a:visited {
