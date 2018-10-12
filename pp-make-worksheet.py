@@ -111,6 +111,7 @@ class PPMap:
 ###############################################
 if __name__ == "__main__":
     if len(sys.argv) < 6:
+        print("Args: " + str(len(sys.argv)))
         #        0       1          2          3          4          5       6
         print("Usage: <js-file> <css-file> <xsl-file> <out-file   <in-1> [<in-2> [...]]")
         sys.exit(0)
