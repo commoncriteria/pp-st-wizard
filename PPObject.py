@@ -300,8 +300,10 @@ class PP:
         return ret
 
     def handle_mod(self, node):
-        print("Size is "+str(len(node.findall('.//cc:subsection', ns))))
-        return "<div class='mod_sfrs'>"+self.handle_contents(node, False)+"</div>"
+          return \
+              "<div class='mod_sfrs'>\n"\
+              + self.handle_contents(node, False)\
+              + "</div><!--ENd mod_sfrs-->\n"
 
 
     def handle_opt_obj(self, node, status):

@@ -54,7 +54,9 @@ a {
     -webkit-transition: opacity 1500ms linear;
     transition: opacity 1500ms linear;
 }
-
+.modifiedbymodule{
+    text-decoration: strike-through;
+}
 a:visited {
     color: cornflowerblue;
 }

@@ -554,14 +554,46 @@ function isVisible(el){
 }
 
 function moduleChange(){
+    // Hide everything
     var modchecks = hideAllDependents("modcheck");
     var aa;
+    // Figure out what to show
     for(aa=modchecks.length-1; aa>=0; aa--){
 	// 
 	if(isVisible(modchecks[aa]) &&  
 	   modchecks[aa].checked){
 	    var modId = modchecks[aa].id.split(":")[1];
 	    setVisibility(elsByCls("dep:"+modId), true);
+	}
+    }
+
+    var modified_sfrs = elsByCls("modifiedbymodule");
+    for(aa=modified_sfrs.length-1; aa>=0; aa--){
+	modified_sfrs[aa].classList.remove("modifiedbymodule");
+    }
+
+    var modifying = elsByCls("mod_sfrs");
+    // Need to clear all base these
+    //
+
+    for(aa=modifying.length-1; aa>=0; aa--){
+	if(isVisible(modifying[aa])){
+	    applyModifyingGroup(modifying[aa])
+	}
+    }
+}
+
+function applyModifyingGroup(parent){
+    var aa=0;
+    var modsfrs = parent.getElementsByClassName("component");
+    for(aa=modsfrs.length-1; aa>=0; aa--){
+	var origId = modsfrs[aa].id.split(/\:(.+)/)[1];
+	var modified = elById(origId);
+	if(modified.classList.contains("modifiedbymodule")){
+	    alert("Found collision with: " +origId);
+	}
+	else{
+	    modified.classList.add("modifiedbymodule");
 	}
     }
 }
