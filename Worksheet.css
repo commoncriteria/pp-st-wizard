@@ -3,7 +3,7 @@ table tr:nth-child(2n+2){
     background-color:#F4F4F4;
 }
 
-body{
+.basepane{
     max-width: 900px;
     margin: auto;
 }
@@ -32,6 +32,15 @@ a {
     text-decoration: none;
     color: cornflowerblue;
 }    
+#help-pane{
+    position: fixed;
+    height:100%;
+    top: 0%;
+    display: none;
+    background-color: lightblue;
+    border-radius: 25px;
+    padding: 10px;
+}
 
 #fade-pane{
     position: fixed;

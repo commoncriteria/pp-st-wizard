@@ -159,6 +159,14 @@ function killFade(){
     fp.parentNode.removeChild(fp);
 }
 
+function fixToolTips(){
+  var tooltipelements = document.getElementsByClassName("tooltiptext");
+  var aa;
+  for(aa=tooltipelements.length-1; aa>=0; aa--){
+      tooltipelements[aa].parentNode.classList.add("tooltipped");
+  }
+}
+
 function init(){
     if( document.URL.startsWith("file:///") ){
         var warn = elById("url-warning");
@@ -173,6 +181,7 @@ function init(){
 	fp.style.opacity = '0';
 	setTimeout(killFade, 2000);
     }
+    fixToolTips();
     prefix=url.searchParams.get("prefix");
     if (prefix==null) prefix="";
     cookieJar = readAllCookies();
@@ -721,7 +730,14 @@ function handleKey(event){
     }
 }
 function handleHelpRequest(){
-    qq("Help pressed");
+    var helppane = elById('help-pane');
+    if(helppane.style.display!='block'){
+	helppane.style.display='block';
+    }
+    else{
+	helppane.style.display='none';
+    }
+
 }
 
 function reqValidator(elem){

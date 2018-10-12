@@ -166,15 +166,19 @@ if __name__ == "__main__":
        </script>
     </head>
     <body onkeypress='handleKey(event); return true;' onload='init();'>
+      <div id='fade-pane'>
+        Press the <i>esc</i> key for help.
+      </div>
+      <div id='help-pane'>
+        Future Help Goes Here.
+      </div>
+      <div class="basepane">
       <h1>Security Target Wizard</h1>
       <div class='warning-pane'>
         <noscript><h2 class="warning">This page requires JavaScript.</h2></noscript>
            <h2 class="warning" id='url-warning' style="display: none;">
              Most browsers do not store cookies from local pages (i.e, 'file:///...').
              When you close this page, all data will most likely be lost.</h2>
-      </div>
-      <div id='fade-pane'>
-        Press the <i>esc</i> key for help.
       </div>
      
     """)
@@ -186,6 +190,7 @@ if __name__ == "__main__":
         out.write( """'>
          <button type="button" onclick="generateReport()">XML Record</button>
          <button type="button" onclick="fullReport()">HTML Report</button>
+       </div>
        </div>
        <div id='report-node' style="display: none;"/>
     </body>

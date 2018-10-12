@@ -198,10 +198,9 @@ class PP:
         if node.tag == cc("base-pp"):
             return self.handle_base(node)
         elif node.tag == cc("opt-sfrs"):
-            ret=""
-            for comp in node.findall('.//cc:f-component', ns):
-                ret+=self.handle_component(comp, "optional")
-            return ret
+            return self.handle_opt_obj(node, "optional")
+        elif node.tag == cc("obj-sfrs"):
+            return self.handle_opt_obj(node, "objective")
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
 
@@ -293,6 +292,14 @@ class PP:
         ret += self.handle_contents(node, False)
         ret += "</div><!--End dep:"+safeId+" -->\n"
         return ret
+
+
+    def handle_opt_obj(self, node, status):
+        ret=""
+        for comp in node.findall('.//cc:f-component', ns):
+            ret+=self.handle_component(comp, status)
+        return ret
+
 
     def handle_component(self, node, status=None):
         if status==None: status= attr(node,"status")
