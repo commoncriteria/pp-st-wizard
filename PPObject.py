@@ -80,6 +80,9 @@ class PP:
         self.id = to_id(theroot.attrib["name"])
         # Make mappings to selections
         self.makeSelectionMap()
+        # :Basename
+        self.basename=""
+        
 
     def make_id(self, localId):
         return self.id+":"+localId
@@ -207,7 +210,6 @@ class PP:
             return self.handle_opt_obj(node, "selbased")
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
-
         elif node.tag == cc("refinement"):
             ret = "<span class='refinement'>"
             ret += self.handle_contents(node, True)
@@ -288,12 +290,13 @@ class PP:
         return ret
 
     def handle_base(self, node):
-        safeId= self.make_id(to_id(node.attrib["name"]))
-        ret = "<div "
-        ret += "id='"+self.id+":"+safeId+"' "
-        ret += "class='dep:"+safeId+"'>"
+        self.basename=node.attrib["name"]
+        baseId= to_id(self.basename)
+        safeId= self.make_id(baseId)
+        ret = "<div id='"+safeId+"' class='dep:"+baseId+"'>\n"
         ret += self.handle_contents(node, False)
-        ret += "</div><!--End dep:"+safeId+" -->\n"
+        ret += "</div><!--Endbase dep:"+baseId+" -->\n"
+        self.basename=""
         return ret
 
     def handle_mod(self, node):
@@ -311,7 +314,9 @@ class PP:
     def handle_component(self, node, status=None):
         if status==None: status= attr(node,"status")
         ccid=node.attrib["id"]
-        id=self.make_id(to_id(ccid))
+        based=""
+        if self.basename!="": based=to_id(self.basename)+":"
+        id=self.make_id(based+to_id(ccid))
         ret=""
         tooltip=""
         if status == "optional" or status == "objective":
