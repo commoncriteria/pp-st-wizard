@@ -161,11 +161,18 @@ function init(){
         warn.style.display=SHOW;
     }
     var url = new URL(document.URL);
+    var fp = elById("fade-pane");
+    if(url.searchParams.get("hidefade")=="1"){
+	fp.parentNode.removeChild(fp);
+    }
+    else{
+	fp.style.opacity = '0';
+    }
     prefix=url.searchParams.get("prefix");
     if (prefix==null) prefix="";
     cookieJar = readAllCookies();
     var elems = elsByCls("val");
-    performActionOnElements(elems, retrieveFromCookieJar);
+    //    performActionOnElements(elems, retrieveFromCookieJar);
     validateRequirements();
     handleEnter(null);
     baseChange(null)
@@ -604,7 +611,6 @@ function updateDependency(ids){
 
     // Run through all 
     for(aa=0; ids.length>aa; aa++){     
-	qq("Updating all things that depend on "+ids[aa]);
         var enabled = areAnyMastersSelected(ids[aa]);
         // We might need to recur on these if the selection-based
         // requirement had a dependent selection-based requirement.
@@ -665,8 +671,14 @@ function setFocusOnComponent(comp){
 }
 
 function handleKey(event){
+    if (event.key=="Escape"){
+        handleHelpRequest();
+    }
     if(! event.ctrlKey ) return;
+
     var key = event.which || event.keyCode;
+
+
     var curr = document.activeElement;
     var comps = elsByCls('component');
     if (comps.length == 0) return;
@@ -702,14 +714,10 @@ function handleKey(event){
         }
         return "";
     }
-    else if (key==31){
-        handleHelpRequest();
-    }
 }
 function handleHelpRequest(){
     qq("Help pressed");
 }
-
 
 function reqValidator(elem){
     var child = elem.firstElementChild;
@@ -777,7 +785,7 @@ function handleSelectionGroupUpdate(chk){
     var aa; 
     var group=[];
     var isSomethingChecked = populateSelectableGroup(chk,group);
-    qq("isSomethignchecked " + isSomethingChecked);
+
     for(aa=0; group.length>aa ; aa++){
 	if(isSomethingChecked){                                    // If something's checked
 	    if(chk==group[aa]) continue;                           // We're not doing anything to chk

@@ -288,6 +288,19 @@
       </threat>
     </threats>
     </section>
+    <section title='Assumptions' id="assumptions">
+      <assumptions>
+	<assumption id="blah">
+	  <description>
+	  </description>
+	  <objective-refer ref="O.MANAGEMENT">
+	    <rationale>
+	      QQQQ
+	    </rationale>
+	  </objective-refer>
+	</assumption>
+      </assumptions>
+    </section>
   </chapter>
   <chapter title="Security Objectives" id="sobj"> This Extended Package adds SFRs to objectives
   identified in the ApSo PP and describes an additional objective specific to this <abbr
@@ -343,7 +356,6 @@
 </section>
 <section id="secobjenv" title="Security Objectives for the Operational Environment">
   Some text concerning security objectives.
-  <obj name="ABC_DEF">And this is some text about this.</obj>
 </section>
 
 <section id="secconrat" title="Security Objectives Rationale">

@@ -172,7 +172,11 @@ if __name__ == "__main__":
            <h2 class="warning" id='url-warning' style="display: none;">
              Most browsers do not store cookies from local pages (i.e, 'file:///...').
              When you close this page, all data will most likely be lost.</h2>
-</div>
+      </div>
+      <div id='fade-pane'>
+        Press the <i>esc</i> key for help.
+      </div>
+     
     """)
         PPMap.build_worksheet(out)
         # Make sure a base is selected to show the buttons
@@ -182,7 +186,7 @@ if __name__ == "__main__":
         out.write( """'>
          <button type="button" onclick="generateReport()">XML Record</button>
          <button type="button" onclick="fullReport()">HTML Report</button>
-       <div>
+       </div>
        <div id='report-node' style="display: none;"/>
     </body>
 </html>
