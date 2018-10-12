@@ -1,4 +1,4 @@
-const PREAMBLE = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title></title><style type='text/css'>\n"
+const PREAMBLE = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title></title><style type='text/css>\n"
     + ".selection,.assignment{ font-weight:bold;}\n"
     + ".reqid{  float:left;\n"
     + "   font-size:90%;\n"
@@ -443,21 +443,41 @@ function initiateDownload(filename, blob) {
         document.body.removeChild(elem);
     }
 }
-/**
- * Handler for unchecking every other checkbox in a group besides this one.
- * @param sel Is the checkbox that was checked
- */
-function chooseMe(sel){
+
+// A selection group is either bulleted form: 
+//    <span><ul><li><input/><span/></li><li><input/><span/></li>...</ul></span> 
+//   OR inline form:
+//    <span><input/><span/><input/><span/>..</span>
+//
+function populateSelectableGroup(sel,group){
     // Find the common parent
     var common = sel.parentNode;
-
+    var isSomethingChecked = false;
     // Keep going up until yu hit SPAN
     while( common.tagName != "SPAN" ){
         common = common.parentNode;
     }
-    // Toggle all the checkboxes (except the one that was selected)
-    toggleFirstCheckboxExcept(common, sel);
+    var aa;
+    if( isCheckbox(common.children[0])){ // If it's the inline form
+	for(aa=0; common.children.length>aa; aa+=2){
+	    group.push(common.children[aa])
+	    isSomethingChecked = common.children[aa].checked || isSomethingChecked;
+		
+	}
+    }
+    else{
+	common=common.children[0]; // Dip to ul
+	for(aa=0; common.children.length>aa; aa++){
+	    group.push(common.children[aa].children[0]);
+	    isSomethingChecked = common.children[aa].children[0].checked || isSomethingChecked;
+	}
+    }
+    return isSomethingChecked;
 }
+
+
+
+
 
 // ##################################################
 // #         
@@ -465,19 +485,8 @@ function chooseMe(sel){
 function setVisibility(elements, visibility){
     var aa;
     for(aa=0; elements.length>aa; aa++){
-	if(elements[aa].classList.contains('hidable')){
-	    modifyClass(elements[aa], "hidden", !visibility);
-
-	    // if(visibility){
-	    // 	elements[aa].style.display=SHOW;
-	    // }
-	    // else{
-	    // 	elements[aa].style.display=HIDE;
-	    // }
-	}
-	else{
-	    modifyClass(elements[aa], 'disabled', !visibility);
-	}
+	var hideOrDisable = elements[aa].classList.contains('hidable')?"hidden":"disabled";
+	modifyClass(elements[aa], hideOrDisable, !visibility);
     }
 }
 
@@ -608,12 +617,18 @@ function updateDependency(ids){
 }
 
 var sched;
-function update(){
-    if (sched != undefined){
-        clearTimeout(sched);
+function update(el){
+    if(isCheckbox(el)){
+	handleSelectionGroupUpdate(el);
     }
-    sched = setTimeout(delayedUpdate, 1000);
+    validateRequirements();
+    // if (sched != undefined){
+    //     clearTimeout(sched);
+    // }
+    // sched = setTimeout(delayedUpdate, 1000);
 }
+
+
 
 function validateSelectables(sel){
     var child  = sel.firstElementChild;
@@ -738,37 +753,52 @@ function validateRequirements(){
     }
 }
 
-/**
- * @param exc Is the checkbox that the action happened on
- */
-function toggleFirstCheckboxExcept(root, exc){
-    // If it's the exception just return
-    if (root == exc) return;
-    // If root is a checkbox
-    if ( isCheckbox(root)){
-        if( exc.checked ){
-            root.disabled=true;
-	    // Set the checkbox itself to disabled
-            root.classList.add('disabled');
-	    // Set the text after the checkbox to disabled
-            root.nextSibling.classList.add('disabled');
-	    // Uncheck the others
-            root.checked=false;
-	    // Must update that we unchecked something... 
-        }
-        else{
-            root.disabled=false;
-            root.classList.remove('disabled');
-            root.nextSibling.classList.remove('disabled');
-        }
-        return;
+function setCheckboxState(cbox, isEnabled){
+    if(isEnabled){
+	cbox.disabled=false;
+	cbox.classList.remove('disabled');
+	cbox.nextSibling.classList.remove('disabled');
     }
-    var children = root.children;
-    var aa;
-    for (aa=0; aa!=children.length; aa++){
-        toggleFirstCheckboxExcept(children[aa], exc);
+    else{
+	cbox.disabled=true;
+	cbox.classList.add('disabled');
+	cbox.nextSibling.classList.add('disabled');
     }
 }
+
+function isExclusive(chk){
+    return chk.classList.contains("exclusive");
+}
+/**
+ *
+ * @param chk Is the checkbox that the action happened on
+ */
+function handleSelectionGroupUpdate(chk){
+    var aa; 
+    var group=[];
+    var isSomethingChecked = populateSelectableGroup(chk,group);
+    qq("isSomethignchecked " + isSomethingChecked);
+    for(aa=0; group.length>aa ; aa++){
+	if(isSomethingChecked){                                    // If something's checked
+	    if(chk==group[aa]) continue;                           // We're not doing anything to chk
+	    qq("Here");
+	    if(chk.checked){                                       // If we just checked
+		if( isExclusive(chk) || isExclusive(group[aa])){ // And on or the oth
+		    setCheckboxState(group[aa], false);		    
+		}
+	    }
+	    else{   		// It's an uncheck event
+		if( isExclusive(group[aa]) && !group[aa].checked){// And current is exclusive and not checked.
+		    setCheckboxState(group[aa], false);		    
+		}
+	    }
+	}
+	else{
+	    setCheckboxState(group[aa], true);
+	}
+    }
+}
+
 
 // Function to expand and contract a given div
 function toggle(descendent) {
@@ -786,8 +816,6 @@ function delayedUpdate(){
     var elems = elsByCls("val");
     performActionOnElements(elems, saveToCookieJar);
     saveAllCookies(cookieJar);
-
-    validateRequirements();
     sched = undefined;
 }
 
@@ -810,7 +838,7 @@ function transform(xsl, xml, owner){
 function qq(msg){
     console.log(msg);
 }
-
+    
 function logit(val){
     if( prefix=='debug'){
 	console.log(val);

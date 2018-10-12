@@ -69,7 +69,7 @@ class PP:
         # Value of N/A function
         self.man_fun_map['-']="-"
         # Value for Optional function
-        self.man_fun_map['O']="<select onchange='update();' class='val'><option value='O'>O</option><option value='X'>X</option></select>"
+        self.man_fun_map['O']="<select onchange='update(this);' class='val'><option value='O'>O</option><option value='X'>X</option></select>"
         # Holds the root
         self.root=theroot
         # Maps IDs to elements
@@ -164,7 +164,7 @@ class PP:
             onChange=""
             classes=""
             if attr(child,"exclusive") == "yes":
-                onChange+="chooseMe(this);"
+                classes=" exclusive "
             id=""
             if "id" in child.attrib:
                 id = self.make_id(child.attrib["id"])
@@ -176,7 +176,7 @@ class PP:
                     onChange+=delim+"\""+sel+"\""
                     delim=","
                 onChange+="]);"
-            chk+= " onchange='update(); "+onChange+"'"
+            chk+= " onchange='update(this); "+onChange+"'"
             chk+= " data-rindex='"+str(rindex)+"'"
             chk +=" class='val selbox"+classes+"'"
             chk +="></input><span>"+ contents+"</span>\n"
@@ -208,7 +208,7 @@ class PP:
             return ret
 
         elif node.tag == cc("assignable"):
-            ret = "<textarea onchange='update();' class='assignment val' rows='1' placeholder='"
+            ret = "<textarea onchange='update(this);' class='assignment val' rows='1' placeholder='"
             ret += ' '.join(self.handle_contents(node, True).split())
             ret +="'></textarea>"
             return ret
