@@ -197,7 +197,11 @@ class PP:
     def handle_cc_node(self, node, show_text):
         if node.tag == cc("base-pp"):
             return self.handle_base(node)
-
+        elif node.tag == cc("opt-sfrs"):
+            ret=""
+            for comp in node.findall('.//cc:f-component', ns):
+                ret+=self.handle_component(comp, "optional")
+            return ret
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
 
@@ -259,24 +263,26 @@ class PP:
         # elif node.tag == cc("f-element") or node.tag == cc("a-element"):
         #     # Requirements are handled in the title section
         #     return self.handle_contents( node.find( 'cc:title', ns), True)
-
         elif node.tag == cc("f-component") or node.tag == cc("a-component"):
             return self.handle_component(node)
         elif node.tag == cc("title"):
-            self.selectables_index=0
-            ccid = self.up(node).attrib['id']
-            id=self.make_id(to_id(ccid))
-            ret=""
-            ret+="<div id='"+ id +"' class='requirement'>"
-            ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
-            ret+="<div class='words'>"
-            ret+=self.handle_contents(node, True)
-            ret+="</div>\n"
-            ret+="</div><!-- End: "+id+" -->\n"
-            return ret
+            return self.handle_title(node)
         else:
             return self.handle_contents(node, show_text)
         return ""
+
+    def handle_title(self, node):
+        self.selectables_index=0
+        ccid = self.up(node).attrib['id']
+        id=self.make_id(to_id(ccid))
+        ret=""
+        ret+="<div id='"+ id +"' class='requirement'>"
+        ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
+        ret+="<div class='words'>"
+        ret+=self.handle_contents(node, True)
+        ret+="</div>\n"
+        ret+="</div><!-- End: "+id+" -->\n"
+        return ret
 
     def handle_base(self, node):
         # for sfr in node.find("cc:modified-sfrs", ns)
@@ -288,8 +294,8 @@ class PP:
         ret += "</div><!--End dep:"+safeId+" -->\n"
         return ret
 
-    def handle_component(self, node):
-        status= attr(node,"status")
+    def handle_component(self, node, status=None):
+        if status==None: status= attr(node,"status")
         ccid=node.attrib["id"]
         id=self.make_id(to_id(ccid))
         ret=""

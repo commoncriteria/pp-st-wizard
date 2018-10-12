@@ -367,7 +367,46 @@
 	name="Application Software" short="ApSo" 
 	url="https://www.niap-ccevs.org/Profile/Info.cfm?PPID=394&amp;id=394"
 	xmlurl="https://raw.githubusercontent.com/commoncriteria/application/c51970161d3a47fe8a7c23552f372745a638ba7d/input/application.xml">
-      <modified-sfrs/>
+      <modified-sfrs>
+	<subsection title="Protection of the TSF (FPT)" id="fpt">
+          <f-component id="fpt_idv_ext.1" name="Software Identification and Versions">
+	    <consistency-rationale>This is a test</consistency-rationale>
+          <f-element id="fpt_idv_ext.1.1">
+            <title>The emailclient shall be versioned with
+              <selectables>
+                <selectable><h:abbr title="Software Identification">SWID</h:abbr> tags 
+                  that comply with minimum requirements from ISO/IEC 19770-2:2015                 
+                </selectable>
+                <selectable><assignable>other version information</assignable></selectable>
+              </selectables>
+              .
+            </title>
+            <note role="application">The use of SWID tag to identify application software
+              is a requirement for DOD IT based on DoD Instruction 8500.01 which requires
+              the use of SCAP which includes SWID tags per the NIST standard. The PP selection
+              of "other version information" will be removed in the next major release of
+              this protection profile. Vendors should begin to version software with valid SWID tags.
+              <h:br/>
+              <h:br/>
+              Valid SWID tags must contain a SoftwareIdentity element and an Entity element as 
+              defined in the ISO/IEC 19770-2:2015 standard. SWID tags must be stored with a .swidtag 
+              file extensions as defined in the ISO/IEC 19770-2:2015.
+            </note>
+            <aactivity>
+	      <TSS/>
+	      The evaluator shall install the application, then check for the
+              existence of version information. If SWID tags is selected the evaluator shall 
+              check for a .swidtag file. The evaluator shall open the file and verify that 
+              is contains at least a SoftwareIdentity element and an Entity element. If 
+              "other version information" is selected the evaluator shall verify that the 
+              application has versioning information matching that described in the TSS.
+            </aactivity>
+          </f-element>
+        </f-component>
+      </subsection>
+
+
+      </modified-sfrs>
       <additional-sfrs>
 	<subsection title="Cryptographic Support (FCS)" id="fcs">
 	  <f-component id="fcs_smime_ext.1" name="Secure/Multipurpose Internet Mail Extensions (S/MIME)">
@@ -957,6 +996,7 @@
     </base-pp>
     <man-sfrs/>
     <opt-sfrs>
+      <subsection id="CryptoStuff" title="Blahblah">
       <f-component id="fcs_ckm_ext.5" name="Cryptographic Key Derivation (Password/Passphrase Conditioning)">
 	<consistency-rationale>
 	</consistency-rationale>
@@ -1182,8 +1222,10 @@
 	  </aactivity>
 	</f-element>
       </f-component>
+      </subsection>
     </opt-sfrs>
     <sel-sfrs>
+      <subsection id="addon" title="Add ons">
       <f-component id="fpt_aon_ext.2" name="Trusted Installation and Update for Add-ons">
 	<selection-depends req="FPT_AON_EXT.1.1" ids="aonext1_addon"/>
 	<consistency-rationale>
@@ -1338,6 +1380,7 @@
 	  </aactivity>
 	</f-element>
       </f-component>
+      </subsection>
     </sel-sfrs>
     <obj-sfrs/>
   </chapter>
