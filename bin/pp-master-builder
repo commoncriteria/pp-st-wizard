@@ -1,0 +1,122 @@
+#!/bin/bash
+#=================================================================================
+#=
+#=     FILE: pp-master-builder
+#=
+#
+####
+# Below is the description in markdown. It is used as input to generate roff section that is at the end of this file
+# I use 
+# awk '/# BEGIN INPUT DOCUMENTATION/{flag=1;next} /# END INPUT DOCUMENTATION/{flag=0} flag {print}' pp-master-builder | cut -b 3- | ronn -r
+# BEGIN INPUT DOCUMENTATION
+#=pp-master-builder -- The Protection Profile Wizard Builder
+#========================================
+#=
+#=SYNOPSIS
+#=--------
+#=
+#=`pp-master-builder`   --help|-h|help   
+#=`pp-master-builder` *html-out* *in-1* [ *in-2* [ ... ] ]
+#=
+#=DESCRIPTION
+#=-----------
+#=
+#=`pp-master-builder` is an executable that builds an HTML file for a collection of 
+#=Protection Profiles and modules that are defined to the NIAP XML specification.
+#=
+#=OPTIONS
+#=-------
+#=
+#=* **--help**, **-h**:
+#=   Prints this help message
+#=* *out*:
+#=   Output file where the HTML is generated
+#=* *in-X*:
+#=   XML Input files defining the Protection Profiles, PP-Modules, PP-Packages, and 
+#=   Technical Decisions.
+#=
+#=DEPENDENCIES
+#=------------
+#=
+#=*pp-master-builder* requires Python3 to run.
+#=
+#=SEE ALSO
+#=--------
+#=* bash(1)
+#=
+#=
+#
+# END INPUT DOCUMENTATION
+
+
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "--help" ]; then
+    ME="$(which $0)"	                                      # Find me
+    NUM=$(grep -n '^ #BEGIN DOCUMENTATION' $ME | awk -F: '{print $1}')
+    NUM=$(expr $NUM + 1)
+    tail --lines=+$NUM $ME | man -l -
+    exit 0;
+fi
+if [ "$#" == 0 ] || [ "$#" == 1 ]; then
+    echo "pp-master-builder requires at least 2 arguments."
+    echo "or a single \`-h\` for help."
+    exit 1;
+fi
+
+
+function findDirectory() {
+    it=$1
+
+    #-- Is it called via the PATH
+    if which $it  1>/dev/null 2>&1 ; then         # If it's in the path
+    	it=$(which $it)                           # Get where it is 
+    fi
+    #-- Check to see if it's a symlink
+    if readlink $it >/dev/null; then              # If it's a link
+	it=$(readlink $it)	                  # Then resolve it
+    fi
+
+    #-- Fix it up
+    DIR=${it%/*}		                  # Strip off the end
+    if [ "$DIR" == "$it" ]; then                  # If they're equal (no directories)
+    	DIR="."			                  # Set the current directory
+    fi
+    echo $DIR
+}
+DIR=$(findDirectory $0)/..
+
+python3 $DIR/lib/pp-make-worksheet.py $DIR/content/Worksheet.js $DIR/content/Worksheet.css $DIR/content/ResultsToSt.xsl "$@"
+
+exit 0
+ #############################################################
+ #BEGIN DOCUMENTATION
+.TH "PP\-Master\-Builder" "" "October 2018" "" ""
+.
+.SH pp\-master\-builder \[en] The Protection Profile Wizard Builder
+.SS SYNOPSIS
+.PP
+\f[C]pp\-master\-builder\f[] \[en]help|\-h|help
+.PD 0
+.P
+.PD
+\f[C]pp\-master\-builder\f[] \f[I]html\-out\f[] \f[I]in\-1\f[] [
+\f[I]in\-2\f[] [ \&... ] ]
+.SS DESCRIPTION
+.PP
+\f[C]pp\-master\-builder\f[] is an executable that builds an HTML file
+for a collection of Protection Profiles and modules that are defined to
+the NIAP XML specification.
+.SS OPTIONS
+.IP \[bu] 2
+\f[B]\[en]help\f[], \f[B]\-h\f[]: Prints this help message
+.IP \[bu] 2
+\f[I]out\f[]: Output file where the HTML is generated
+.IP \[bu] 2
+\f[I]in\-X\f[]: XML Input files defining the Protection Profiles,
+PP\-Modules, PP\-Packages, and Technical Decisions.
+.SS DEPENDENCIES
+.PP
+\f[I]pp\-master\-builder\f[] requires Python3 to run.
+.SS SEE ALSO
+.IP \[bu] 2
+bash(1)
