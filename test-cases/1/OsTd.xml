@@ -1,34 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<technical-decisions xmlns="https://niap-ccevs.org/cc/v1" xmlns:h="http://www.w3.org/1999/xhtml">
-  <group max="2.0" name="General Purpose Operating System">
+<technical-decisions  xmlns:h="http://www.w3.org/1999/xhtml" 
+		      xmlns="https://niap-ccevs.org/cc/v1">
+  <bunch>
+    <applies-to max="2.0" name="General Purpose Operating System"/>
+    <applies-to max="1.0" name="Application Software"/>
     <decision date="">
-          <f-element id="fcs_sto_ext.1.1">
-            <title>
-	      The OS shall implement functionality to encrypt sensitive data AND really funny memes
-	      stored in non-volatile storage and provide interfaces to applications to invoke this functionality.
-            </title>
-			<note role="application">Sensitive data shall be identified in the TSS by the ST 
-			author, and minimally includes credentials and keys.  The interface for invoking the
-			functionality could take a variety of forms: it could consist of an API, 
-			or simply well-documented conventions for accessing credentials stored as files.
-			</note>
-            <aactivity>
-	      <TSS/>
-	      <h:p>
-	      The evaluator will check the TSS to ensure that it lists all persistent
-              sensitive data for which the OS provides a storage capability.  For each of these
-              items, the evaluator will confirm that the TSS lists for what purpose it can be used,
-              and how it is stored.  
-	      The evaluator will confirm that cryptographic operations used to protect the data occur as specified in <linkref linkend="fcs_cop.1(1)"/>.
-	      </h:p><h:p>
-	      The evaluator will also consult the developer documentation to verify that an interface
-	      exists for applications to securely store credentials.
-	    </h:p>
-            </aactivity>
-          </f-element>
+      <reason>
+	This is a really important reason.
+      </reason>
+      
 
-
-      <reason></reason>
+      <f-element id="fcs_sto_ext.1.1">
+        <title>
+	  The OS shall implement functionality to encrypt sensitive data AND really funny memes
+	  stored in non-volatile storage and provide interfaces to applications to invoke this functionality.
+        </title>
+	<note role="application">Sensitive data shall be identified in the TSS by the ST 
+	author, and minimally includes credentials and keys.  The interface for invoking the
+	functionality could take a variety of forms: it could consist of an API, 
+	or simply well-documented conventions for accessing credentials stored as files.
+	</note>
+        <aactivity>
+	  <TSS/>
+	  <h:p>
+	    The evaluator will check the TSS to ensure that it lists all persistent
+            sensitive data for which the OS provides a storage capability.  For each of these
+            items, the evaluator will confirm that the TSS lists for what purpose it can be used,
+            and how it is stored.  
+	    The evaluator will confirm that cryptographic operations used to protect the data occur as specified in <linkref linkend="fcs_cop.1(1)"/>.
+	    </h:p><h:p>
+	    The evaluator will also consult the developer documentation to verify that an interface
+	    exists for applications to securely store credentials.
+	  </h:p>
+        </aactivity>
+      </f-element>
     </decision>
-  </group>
+  </bunch>
 </technical-decisions>

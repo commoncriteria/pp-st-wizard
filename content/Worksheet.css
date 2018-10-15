@@ -88,6 +88,9 @@ div{
     transition: sliding-vertically 5s ease-in-out;
 }
 
+
+
+
 /**
  * Displaying either a green check or red X before  components and requirements.
  */
@@ -115,9 +118,15 @@ div{
 .requirement.invalid.optional .f-el-title::before{
     content: "\2715";
     color: #2626FF; 
+}
 
+.component.modifiedbymodule .f-comp-status::before{
+    content: "\26D4";
+    color: purple;
 
 }
+
+
 
 .hidden {
     display: none;
