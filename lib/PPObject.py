@@ -338,11 +338,13 @@ class PP:
         ret+="'>"
         #<a href='#"+id+"'>
 
-        # The toggle(this
+        # Add the toggler
+
         ret+="""<span class='f-comp-status'></span>
                 <a onclick='toggle(this); return false;' href='#"+id+"' class='f-comp-title'>"""
         ret+=ccid.upper()+" &#8212; "+ node.attrib["name"]+"</a>"
         ret+=tooltip
+        ret+="<span class='comp-notes'></span>"
         ret+="\n<div class='reqgroup'>\n"
         ret+=self.handle_contents(node, False)
         ret+="\n</div></span><!-- End: "+id+" --><br/>"

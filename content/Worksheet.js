@@ -567,15 +567,18 @@ function moduleChange(){
 	}
     }
 
+    // Remove all modified-by-module classes.
     var modified_sfrs = elsByCls("modifiedbymodule");
     for(aa=modified_sfrs.length-1; aa>=0; aa--){
 	modified_sfrs[aa].classList.remove("modifiedbymodule");
     }
+    var modifiednotes = elsByCls("modifiedbymodulenote");
+    for(aa=modifiednotes.length-1; aa>=0; aa--){
+	modifiednotes[aa].parentNode.removeChild(modifiednotes[aa]);
+    }
 
+    // Find all mod sfrs that are applied.
     var modifying = elsByCls("mod_sfrs");
-    // Need to clear all base these
-    //
-
     for(aa=modifying.length-1; aa>=0; aa--){
 	if(isVisible(modifying[aa])){
 	    applyModifyingGroup(modifying[aa])
@@ -583,6 +586,9 @@ function moduleChange(){
     }
 }
 
+/**
+ *
+ */
 function applyModifyingGroup(parent){
     var aa=0;
     var modsfrs = parent.getElementsByClassName("component");
@@ -594,10 +600,19 @@ function applyModifyingGroup(parent){
 	}
 	else{
 	    modified.classList.add("modifiedbymodule");
+	    addNote(modified, "modifiedbymodulenote", "Modified by a module");
 	}
     }
 }
 
+function addNote(parent, classname, notemsg){
+    var noteparent = parent.getElementsByClassName("comp-notes");
+    // if(noteparent.length==0) return;
+    var note = document.createElement("div");
+    note.classList.add(classname);
+    note.appendChild(document.createTextNode(notemsg));
+    noteparent[0].appendChild(note);
+}
 
 function areAnyMastersSelected(id){
     var masters = elsByCls(id+"_m");
@@ -711,11 +726,11 @@ function setFocusOnComponent(comp){
 }
 
 function handleKey(event){
-    if (event.key=="Escape"){
-        handleHelpRequest();
-    }
     if(! event.ctrlKey ) return;
-
+    if (event.key=='?'){
+        handleHelpRequest();
+	return "";
+    }
     var key = event.which || event.keyCode;
 
 

@@ -1,5 +1,5 @@
 
 
 default:
-	python3 pp-make-worksheet.py Worksheet.js Worksheet.css ResultsToSt.xsl /tmp/Out.txt $$(cat ProfileList.txt) 
+	./bin/pp-master-builder /tmp/New.html $$(find test-cases/1/ -name '*.xml')
 
