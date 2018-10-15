@@ -8,6 +8,13 @@ table tr:nth-child(2n+2){
     margin: auto;
 }
 
+
+.comp-notes a{
+    text-decoration: none;
+}
+
+
+
 h1{
     border-bottom-style: double;
 }
@@ -54,9 +61,10 @@ a {
     -webkit-transition: opacity 1500ms linear;
     transition: opacity 1500ms linear;
 }
-.modifiedbymodule{
-    text-decoration: strike-through;
+.modifiedbymodule .f-comp-title{
+    text-decoration: line-through;
 }
+
 a:visited {
     color: cornflowerblue;
 }
@@ -79,6 +87,10 @@ div.component{
 div{
     transition: sliding-vertically 5s ease-in-out;
 }
+
+/**
+ * Displaying either a green check or red X before  components and requirements.
+ */
 
 .component.valid .f-comp-status::before,
 .valid .f-el-title::before{

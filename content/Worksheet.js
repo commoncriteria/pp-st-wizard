@@ -579,9 +579,11 @@ function moduleChange(){
 
     // Find all mod sfrs that are applied.
     var modifying = elsByCls("mod_sfrs");
+
     for(aa=modifying.length-1; aa>=0; aa--){
 	if(isVisible(modifying[aa])){
-	    applyModifyingGroup(modifying[aa])
+	    var modname = modifying[aa].parentNode.previousSibling.innerHTML;
+	    applyModifyingGroup(modifying[aa], modname);
 	}
     }
 }
@@ -589,7 +591,7 @@ function moduleChange(){
 /**
  *
  */
-function applyModifyingGroup(parent){
+function applyModifyingGroup(parent, modname){
     var aa=0;
     var modsfrs = parent.getElementsByClassName("component");
     for(aa=modsfrs.length-1; aa>=0; aa--){
@@ -600,17 +602,18 @@ function applyModifyingGroup(parent){
 	}
 	else{
 	    modified.classList.add("modifiedbymodule");
-	    addNote(modified, "modifiedbymodulenote", "Modified by a module");
+	    var note = document.createElement("div");
+	    note.classList.add("modifiedbymodulenote");
+	    note.innerHTML=
+		""+
+		"This requirement was redefined by the <a href='#"+modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
+	    modified.getElementsByClassName("comp-notes")[0].appendChild(note);
 	}
     }
 }
 
 function addNote(parent, classname, notemsg){
     var noteparent = parent.getElementsByClassName("comp-notes");
-    // if(noteparent.length==0) return;
-    var note = document.createElement("div");
-    note.classList.add(classname);
-    note.appendChild(document.createTextNode(notemsg));
     noteparent[0].appendChild(note);
 }
 
