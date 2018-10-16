@@ -9,8 +9,9 @@ table tr:nth-child(2n+2){
 }
 
 
-.comp-notes a{
-    text-decoration: none;
+.comp-notes div::before{
+    content: "*";
+    color: #111;
 }
 
 
@@ -53,7 +54,7 @@ a {
     position: fixed;
     background-color: lightblue;
     top: 20%;
-    left: 40%;
+    left: 30%;
     font-size:xx-large;
     border-radius: 25px;
     padding: 40;

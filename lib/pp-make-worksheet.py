@@ -14,31 +14,34 @@ import PPObject
 class PPMap:
     """ Structure that saves modules to their associated bases """
 
-    # Maps a base to a module
-    baseToMods={}
+    ## These are the class fields
 
-    # Maps a module to possible bases
-    modToBase={}
+    # Maps a name to the base and module definitions.
+    basenameToDefs={}
 
     # List of all modules
-    allmods=[]
+    modnameToDef={}
 
+
+  
     def __init__(self):
         self.base=None
         self.modules=[]
 
 
-    def add_mod(modroot, bases):
+    def add_mod(modobj, basetrees):
         """ Adds a module """
-        PPMap.allmods.append(modroot)                # Add to all modules
-        for base in bases:
-            baseMap = PPMap.get_pp_map(base.attrib["name"])
-            baseMap.modules.append(modroot)          # Add it to the bases
+        name = modobj.root.attrib["name"]
+        PPMap.modnameToDef[name]=modobj # Add to all modules
+        for basetree in basetrees:
+            basename = basetree.attrib["name"]
+            baseMap = PPMap.get_pp_map(basename)
+            baseMap.modules.append(modobj)          # Add it to the bases
 
     def get_pp_map(name):
-        if not name in PPMap.baseToMods:
-            PPMap.baseToMods[name]=PPMap()
-        return PPMap.baseToMods[name]
+        if not name in PPMap.basenameToDefs:
+            PPMap.basenameToDefs[name]=PPMap()
+        return PPMap.basenameToDefs[name]
 
     def write_init_pp_structures(out):
         out.write("function initPPStructures(){")
@@ -48,11 +51,11 @@ class PPMap:
         out.write("<div id='ws_base'>")
         out.write("<h3>Select the Base Protection Profile:</h3>")
         modsec=""
-        for name in sorted(PPMap.baseToMods):
-            map=PPMap.baseToMods[name]
+        for name in sorted(PPMap.basenameToDefs):
+            map=PPMap.basenameToDefs[name]
             if map.base == None:
                 sys.err.print("Some module modifies an unknown base: "+name)
-                del PPMap.baseToMods[name]
+                del PPMap.basenameToDefs[name]
                 continue
             id=PPObject.to_id(name)
             # THis will break if modules have a double quote in their name
@@ -60,7 +63,8 @@ class PPMap:
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
             out.write(" data-mods='")
             for module in map.modules:
-                out.write(module.attrib["name"]+",")
+                name=module.root.attrib["name"]
+                out.write(name+",")
             out.write("' id='bases:"+id+"'></input>")
             out.write(name + "<br/>\n")
             # for module in map.modules:
@@ -68,17 +72,17 @@ class PPMap:
         
         out.write("<div id='ws_mods' class='disabled");
         
-        for base in PPMap.baseToMods:
+        for base in PPMap.basenameToDefs:
             out.write(" dep:")
             out.write(PPObject.to_id(base))
         out.write("'>")
         out.write("<h3>Select All Applicable Modules</h3>\n")
         # Run through all modules
-        for mod in PPMap.allmods:
-            name=mod.attrib["name"]
+        for name in sorted(PPMap.modnameToDef):
+            mod=PPMap.modnameToDef[name]
             id=PPObject.to_id(name)
             out.write("<div class='hidable modcheckdiv")
-            for base in mod.findall(".//cc:base-pp",  PPObject.ns):
+            for base in mod.root.findall(".//cc:base-pp",  PPObject.ns):
                 out.write(" dep:")
                 out.write(PPObject.to_id(base.attrib["name"]))
             out.write("'>")
@@ -87,21 +91,22 @@ class PPMap:
         out.write("</div>") # Ends ws_mods
 
         # Run through all the bases
-        for name in sorted(PPMap.baseToMods):
-            map=PPMap.baseToMods[name]
+        for name in sorted(PPMap.basenameToDefs):
+            map=PPMap.basenameToDefs[name]
             id=PPObject.to_id(name)
             out.write("<div class='hidable dep:"+id+"' id='base:"+id+"'>");
             out.write("<h3>"+name+"</h3>")
-            obj = PPObject.PP(map.base)
+            obj = map.base
             out.write(obj.handle_contents(obj.root, False))
             out.write("</div>")
 
         # Run through all the modules
-        for mod in PPMap.allmods:
-            id=PPObject.to_id(mod.attrib["name"])
+        for name in sorted(PPMap.modnameToDef):
+            mod=PPMap.modnameToDef[name]
+            id=PPObject.to_id(name)
             out.write("<div class='hidable dep:"+id + "'>");
-            out.write("<h3>"+mod.attrib["name"]+"</h3>")
-            obj = PPObject.PP(mod)
+            out.write("<h3>"+mod.root.attrib["name"]+"</h3>")
+            obj = mod
             out.write(obj.handle_contents(obj.root, False))
             out.write("</div>")
 
@@ -132,18 +137,33 @@ if __name__ == "__main__":
     with open(xslfile, "rb") as in_handle:
         xslb64 = base64.b64encode(in_handle.read()).decode('ascii')
 
+    # Technical Decisions
+    tds=[]
+
     #- Run through the rest of the inputs
     for inIndex in range(5, len(sys.argv)):
         root = ET.parse(sys.argv[inIndex]).getroot()
         bases = root.findall( ".//cc:base-pp", PPObject.ns)
         
         if len( bases ) > 0:
-            PPMap.add_mod(root, bases)
+            PPMap.add_mod(PPObject.PP(root), bases)
         elif root.tag == PPObject.cc("PP"):
-            ppmap = PPMap.get_pp_map(root.attrib["name"])
-            ppmap.base= root
-        elif root.tag == PPObject.cc("technical-decisions"):
-            print("Handling a technical decision")
+            ppmap = PPMap.get_pp_map(root.attrib["name"])    # Get any existing one
+            ppmap.base= PPObject.PP(root)
+        elif root.tag == PPObject.cc("technical-decisions"): # If it's a TD
+            tds.append(root)                                 # save it for the end
+
+    for td in tds:
+        for bunch in td.findall(".//cc:bunch", PPObject.ns):
+            for applies in bunch.findall("./cc:applies-to", PPObject.ns):
+                name=applies.attrib["name"]
+                if name in PPMap.basenameToDefs:
+                    PPMap.basenameToDefs[name].base.applyBunchOfTDs(bunch)
+                elif name in PPMap.modnameToDef:
+                    module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
+                else: 
+                    print("Could not find PP or PP-Mod with the name: " + name +". Ignoring.");
+                print("Applying bunch to " + name + " " + applies.attrib["max-inclusive"])
 
     with open(outfile, "w") as out:
         out.write(
@@ -185,7 +205,7 @@ if __name__ == "__main__":
         PPMap.build_worksheet(out)
         # Make sure a base is selected to show the buttons
         out.write("<div class='")
-        for base in PPMap.baseToMods:
+        for base in PPMap.basenameToDefs:
             out.write("dep:"+PPObject.to_id(base)+" ")
         out.write( """'>
          <button type="button" onclick="generateReport()">XML Record</button>

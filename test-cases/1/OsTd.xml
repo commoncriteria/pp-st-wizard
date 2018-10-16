@@ -2,14 +2,12 @@
 <technical-decisions  xmlns:h="http://www.w3.org/1999/xhtml" 
 		      xmlns="https://niap-ccevs.org/cc/v1">
   <bunch>
-    <applies-to max="2.0" name="General Purpose Operating System"/>
-    <applies-to max="1.0" name="Application Software"/>
-    <decision date="">
-      <reason>
-	This is a really important reason.
-      </reason>
-      
-
+    <applies-to max-inclusive="2.0" name="General Purpose Operating System"/>
+    <applies-to max-inclusive="1.0" name="Application Software"/>
+    <decision id="1234" date="2018-09-05">
+      <notes>
+	This is a really important notes.
+      </notes>
       <f-element id="fcs_sto_ext.1.1">
         <title>
 	  The OS shall implement functionality to encrypt sensitive data AND really funny memes

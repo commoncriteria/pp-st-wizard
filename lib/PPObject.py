@@ -83,6 +83,11 @@ class PP:
         # :Basename
         self.basename=""
         
+    # TD is an XML representation of a technical decision
+    def applyBunchOfTDs(self, td):
+        
+
+        pass
 
     def make_id(self, localId):
         return self.id+":"+localId
