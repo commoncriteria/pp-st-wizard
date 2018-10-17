@@ -88,20 +88,52 @@ class PP:
         return float(ver)
 
     # TD is an XML representation of a technical decision
-    def applyBunchOfTDs(self, td):
+    def applyBunchOfTDs(self, bunch):
+        for td in bunch.findall("./cc:decision",ns):
+            self.applyTD(td)
+            
+    def applyTD(self, td):
         # We have a decision
-        deadswitch=0
         for req in td.findall(".//cc:f-element", ns):
+            deadswitch=0
             id=req.attrib['id']
             oldel=self.root.find(".//cc:f-element[@id='"+id+"']", ns)
             parent=self.up(oldel)
+            # Figure out what child is this
+            index=0
+            for child in parent:
+                if child==oldel:
+                    break;
+                index+=1
+            # Remove the old
+            parent.remove(oldel)
+            del self.parent_map[oldel]
+            print("Old tag is " + oldel.tag)
+            print("New tag is " + req.tag)
+            # Add the new
+            parent.insert(index, req)
+            # Register my parent
+            self.parent_map[req]=parent
+            # And all in my subtree
+            self.register_parents(req)
+            # Keep going until we find the f-component to make a note
             while parent.tag != cc("f-component"):
                 parent = self.up(parent)
                 if deadswitch==10:
                     break;
                 deadswitch=deadswitch+1
-            print("Did I find it: " + parent.tag)
-            
+            if deadswitch==10:
+                break;
+            note = ET.SubElement(parent, u'{%s}note'%PPNS)
+            note.text="Requirement '"+id.upper()+"' updated by TD #"+td.attrib['id']+ " issued on " + td.attrib['date']
+
+    
+    def register_parents(self, root):
+        "Registers the nodes to their parents for root and below"
+        for child in root:
+            self.parent_map[child]=root
+            self.register_parents(child)
+
 
     def make_id(self, localId):
         return self.id+":"+localId
@@ -363,10 +395,14 @@ class PP:
                 <a onclick='toggle(this); return false;' href='#"+id+"' class='f-comp-title'>"""
         ret+=ccid.upper()+" &#8212; "+ node.attrib["name"]+"</a>"
         ret+=tooltip
-        ret+="<span class='comp-notes'></span>"
         ret+="\n<div class='reqgroup'>\n"
         ret+=self.handle_contents(node, False)
-        ret+="\n</div></span><!-- End: "+id+" --><br/>"
+        ret+="\n</div>"
+        ret+="<span class='comp-notes'>"
+        for note in node.findall("cc:note", ns):
+            ret += "<div class='note'>"+note.text+"</div><!--End Note -->"
+        ret+="</span>"
+        ret+="</span><!-- End: "+id+" --><br/>"
         return ret
 
 

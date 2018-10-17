@@ -163,7 +163,7 @@ if __name__ == "__main__":
                 maxver=float(applies.attrib["max-inclusive"])
                 if name in PPMap.basenameToDefs:
                     ppobj=PPMap.basenameToDefs[name].base
-                    if maxver <= ppobj.getVersion(): ppobj.applyBunchOfTDs(bunch)
+                    if maxver >= ppobj.getVersion(): ppobj.applyBunchOfTDs(bunch)
                 elif name in PPMap.modnameToDef:
                     module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
                 else: 

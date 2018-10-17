@@ -606,7 +606,7 @@ function applyModifyingGroup(parent, modname){
 	    note.classList.add("modifiedbymodulenote");
 	    note.innerHTML=
 		""+
-		"This requirement was redefined by the <a href='#"+modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
+		"This component was redefined by the <a href='#"+modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
 	    modified.getElementsByClassName("comp-notes")[0].appendChild(note);
 	}
     }
