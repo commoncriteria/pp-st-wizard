@@ -63,7 +63,8 @@ class PPMap:
             # Probably no risk of that.
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
             out.write("' id='bases:"+id+"'></input>")
-            out.write(name + "<br/>\n")
+            out.write(name+ " ")
+            out.write(map.base.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",PPObject.ns).text+ "<br/>\n")
             # for module in map.modules:
         out.write("</div>\n")
         
@@ -84,7 +85,11 @@ class PPMap:
                 out.write(PPObject.to_id(base.attrib["name"]))
             out.write("'>")
             out.write("<input type='checkbox' class='modcheck' onchange='moduleChange()' id='mods:"+id+"'></input>")
-            out.write(name + "</div>\n")
+            out.write(name + " ")
+            out.write(mod.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",PPObject.ns).text+ "<br/>\n")
+            out.write("</div>\n")
+
+
         out.write("</div>") # Ends ws_mods
 
         # Run through all the bases
