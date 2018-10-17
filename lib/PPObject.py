@@ -74,7 +74,7 @@ class PP:
         self.root=theroot
         # Maps IDs to elements
         self.parent_map = {c:p for p in self.root.iter() for c in p}
-        # Used to run 'getElementByClassname'
+        # Use
         self.create_classmapping()
         # Grab out name and make it an id
         self.id = to_id(theroot.attrib["name"])
@@ -82,12 +82,26 @@ class PP:
         self.makeSelectionMap()
         # :Basename
         self.basename=""
-        
+
+    def getVersion(self):
+        ver=self.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",ns).text
+        return float(ver)
+
     # TD is an XML representation of a technical decision
     def applyBunchOfTDs(self, td):
-        
-
-        pass
+        # We have a decision
+        deadswitch=0
+        for req in td.findall(".//cc:f-element", ns):
+            id=req.attrib['id']
+            oldel=self.root.find(".//cc:f-element[@id='"+id+"']", ns)
+            parent=self.up(oldel)
+            while parent.tag != cc("f-component"):
+                parent = self.up(parent)
+                if deadswitch==10:
+                    break;
+                deadswitch=deadswitch+1
+            print("Did I find it: " + parent.tag)
+            
 
     def make_id(self, localId):
         return self.id+":"+localId

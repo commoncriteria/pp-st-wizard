@@ -51,6 +51,7 @@ class PPMap:
         out.write("<div id='ws_base'>")
         out.write("<h3>Select the Base Protection Profile:</h3>")
         modsec=""
+        # Build the selection area for base PPs
         for name in sorted(PPMap.basenameToDefs):
             map=PPMap.basenameToDefs[name]
             if map.base == None:
@@ -63,8 +64,8 @@ class PPMap:
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
             out.write(" data-mods='")
             for module in map.modules:
-                name=module.root.attrib["name"]
-                out.write(name+",")
+                modname=module.root.attrib["name"]
+                out.write(modname+",")
             out.write("' id='bases:"+id+"'></input>")
             out.write(name + "<br/>\n")
             # for module in map.modules:
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         xslb64 = base64.b64encode(in_handle.read()).decode('ascii')
 
     # Technical Decisions
-    tds=[]
+    tds={}
 
     #- Run through the rest of the inputs
     for inIndex in range(5, len(sys.argv)):
@@ -151,14 +152,18 @@ if __name__ == "__main__":
             ppmap = PPMap.get_pp_map(root.attrib["name"])    # Get any existing one
             ppmap.base= PPObject.PP(root)
         elif root.tag == PPObject.cc("technical-decisions"): # If it's a TD
-            tds.append(root)                                 # save it for the end
+            tds[sys.argv[inIndex]]=root                      # save it for the end
 
-    for td in tds:
+    for tdpath in tds:
+        td=tds[tdpath]
+        appliedTD=False
         for bunch in td.findall(".//cc:bunch", PPObject.ns):
             for applies in bunch.findall("./cc:applies-to", PPObject.ns):
                 name=applies.attrib["name"]
+                maxver=float(applies.attrib["max-inclusive"])
                 if name in PPMap.basenameToDefs:
-                    PPMap.basenameToDefs[name].base.applyBunchOfTDs(bunch)
+                    ppobj=PPMap.basenameToDefs[name].base
+                    if maxver <= ppobj.getVersion(): ppobj.applyBunchOfTDs(bunch)
                 elif name in PPMap.modnameToDef:
                     module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
                 else: 
