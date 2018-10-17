@@ -62,10 +62,6 @@ class PPMap:
             # THis will break if modules have a double quote in their name
             # Probably no risk of that.
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
-            out.write(" data-mods='")
-            for module in map.modules:
-                modname=module.root.attrib["name"]
-                out.write(modname+",")
             out.write("' id='bases:"+id+"'></input>")
             out.write(name + "<br/>\n")
             # for module in map.modules:
