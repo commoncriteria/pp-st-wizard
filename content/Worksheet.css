@@ -139,14 +139,11 @@ div{
     pointer-events: none;
 }
 
-.disabled .modcheckdiv{
+.disabled .modcheckdiv, .disabled .f-comp-status{
     display: none;
 }
 
 
-.disabled .f-comp-status{
-    display: none;
-}
 
 .warning{
     text-align:center;
