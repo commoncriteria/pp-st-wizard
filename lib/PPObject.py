@@ -31,8 +31,9 @@ def to_id(name):
     ret = ret.replace("^", "_c")
     return ret.replace(" ", "_")
     
-def to_name(id):
-    return id.replace("_", " ")
+# Removing this as it's not up-to-date
+# def to_name(id):
+#     return id.replace("_", " ")
 
 
 def cc(tag):
