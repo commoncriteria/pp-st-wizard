@@ -85,15 +85,15 @@ class PP:
         self.basename=""
 
     def get_js_selmap(self):
-        ret="{\n"
+        ret="'"+self.id+"':{\n"
         for selid in self.selMap:
             ret+= "'"+selid+"':"
             delim="["
             for sel in self.selMap[selid]:
-                ret+=delim+"\""+sel+"\""
+                ret+=delim+"\""+to_id(sel)+"\""
                 delim=","
             ret+="],\n"
-        return ret+"}"
+        return ret+"},"
 
     def getVersion(self):
         " Gets a version of a Module or PP "
@@ -141,7 +141,6 @@ class PP:
             anchor.text = "#"+td.attrib['id']+ " issued on " + td.attrib['date']
             anchor.attrib['href']=td.attrib['url']
             anchor.tail='.'
-            print("Anchor text="+anchor.text)
     
     def register_parents(self, root):
         "Registers the nodes to their parents for root and below"
@@ -150,7 +149,7 @@ class PP:
             self.register_parents(child)
 
 
-    def make_id(self, localId):
+    def to_global_id(self, localId):
         return self.id+":"+localId
 
     def up(self, node):
@@ -233,15 +232,7 @@ class PP:
                 classes=" exclusive "
             id=""
             if "id" in child.attrib:
-                id = self.make_id(child.attrib["id"])
-            # if id!="" and id in self.selMap:
-            #     onChange+="updateDependency("
-            #     delim="["
-            #     for sel in self.selMap[id]:
-            #         classes+=" "+sel+"_m"
-            #         onChange+=delim+"\""+sel+"\""
-            #         delim=","
-            #     onChange+="]);"
+                chk += " id='"+self.to_global_id(child.attrib["id"])+"'"
             chk+= " onchange='update(this); "+onChange+"'"
             chk+= " data-rindex='"+str(rindex)+"'"
             chk +=" class='val selbox"+classes+"'"
@@ -270,7 +261,7 @@ class PP:
         elif node.tag == cc("obj-sfrs"):
             return self.handle_opt_obj(node, "objective")
         elif node.tag == cc("sel-sfrs"):
-            return self.handle_opt_obj(node, "selbased")
+            return self.handle_opt_obj(node, "sel-based")
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
         elif node.tag == cc("refinement"):
@@ -319,7 +310,7 @@ class PP:
             prefix=ctrtype+" "
             if "pre" in node.attrib:
                 prefix=node.attrib["pre"]
-            idAttr=self.make_id(node.attrib["id"])
+            idAttr=self.to_global_id(node.attrib["id"])
             ret="<span class='ctr' data-myid='"+idAttr+"+data-counter-type='ct-"
             ret+=ctrtype+"' id='cc-"+idAttr+"'>\n"
             ret+=prefix
@@ -344,7 +335,7 @@ class PP:
         self.selectables_index=0
         ccid = self.up(node).attrib['id']
         safe_ccid=to_id(ccid)
-        id=self.make_id(safe_ccid)
+        id=self.to_global_id(safe_ccid)
         ret=""
         ret+="<div id='"+ id +"' class='requirement "+safe_ccid+"'>"
         ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
@@ -357,7 +348,7 @@ class PP:
     def handle_base(self, node):
         self.basename=node.attrib["name"]
         baseId= to_id(self.basename)
-        safeId= self.make_id(baseId)
+        safeId= self.to_global_id(baseId)
         ret = "<div id='"+safeId+"' class='dep:"+baseId+"'>\n"
         ret += self.handle_contents(node, False)
         ret += "</div><!--Endbase dep:"+baseId+" -->\n"
@@ -384,7 +375,7 @@ class PP:
         based=""
         if self.basename!="": based=to_id(self.basename)+":"
         safe_ccid=to_id(ccid)
-        id=self.make_id(based+safe_ccid)
+        id=self.to_global_id(based+safe_ccid)
         ret=""
         tooltip=""
         if status == "optional" or status == "objective":
@@ -399,6 +390,9 @@ class PP:
         # What is this for
         # node.findall( 'cc:selection-depends', NS)
         ret+=" class='component "+safe_ccid
+        print("Safe ID is: " + safe_ccid);
+        if status== "sel-based":
+            ret+=" sel-based"
         if status!="":
             ret+=" disabled"
         ret+="'>"

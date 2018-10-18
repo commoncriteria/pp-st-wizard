@@ -17,6 +17,8 @@ const PREAMBLE = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title></titl
 const EPILOGUE="</body></html>";
 const HIDE="none";
 const SHOW="block";
+const DISABLED="disabled";
+const MODBYMODULE='modifiedbymodule';
 const AMPERSAND=String.fromCharCode(38);
 const LT=String.fromCharCode(60);
 
@@ -185,8 +187,8 @@ function init(){
     prefix=url.searchParams.get("prefix");
     if (prefix==null) prefix="";
     cookieJar = readAllCookies();
-    var elems = elsByCls("val");
-    //    performActionOnElements(elems, retrieveFromCookieJar);
+    // var elems = elsByCls("val");
+    // performActionOnElements(elems, retrieveFromCookieJar);
     validateRequirements();
     handleEnter(null);
     baseChange(null)
@@ -291,12 +293,12 @@ function fullReport(){
     for(ctr=0; hcomps.length>ctr; ctr++){
         var xcomp = xcomps.iterateNext();
         if(xcomp==null) break;
-        if( hcomps[ctr].classList.contains('disabled') ){
+        if( hcomps[ctr].classList.contains(DISABLED) ){
             disableds.add(xcomp);
         }
     }
     for(let disabled of disableds){
-        disabled.setAttribute("disabled", "yes");
+        disabled.setAttribute(DISABLED, "yes");
     }
     logit(pp_xml);
 
@@ -334,9 +336,6 @@ function fullReport(){
     myBlobBuilder.append(rNode.innerHTML);
     myBlobBuilder.append(EPILOGUE);
     initiateDownload('FullReport.html', myBlobBuilder.getBlob("text/html"));
-}
-
-function gatherAllAppliedRequirements(){
 }
 
 
@@ -506,7 +505,7 @@ function populateSelectableGroup(sel,group){
 function setVisibility(elements, visibility){
     var aa;
     for(aa=0; elements.length>aa; aa++){
-	var hideOrDisable = elements[aa].classList.contains('hidable')?"hidden":"disabled";
+	var hideOrDisable = elements[aa].classList.contains('hidable')?"hidden":DISABLED;
 	modifyClass(elements[aa], hideOrDisable, !visibility);
     }
 }
@@ -568,9 +567,9 @@ function moduleChange(){
     }
 
     // Remove all modified-by-module classes.
-    var modified_sfrs = elsByCls("modifiedbymodule");
+    var modified_sfrs = elsByCls(MODBYMODULE);
     for(aa=modified_sfrs.length-1; aa>=0; aa--){
-	modified_sfrs[aa].classList.remove("modifiedbymodule");
+	modified_sfrs[aa].classList.remove(MODBYMODULE);
     }
     var modifiednotes = elsByCls("modifiedbymodulenote");
     for(aa=modifiednotes.length-1; aa>=0; aa--){
@@ -597,11 +596,11 @@ function applyModifyingGroup(parent, modname){
     for(aa=modsfrs.length-1; aa>=0; aa--){
 	var origId = modsfrs[aa].id.split(/\:(.+)/)[1];
 	var modified = elById(origId);
-	if(modified.classList.contains("modifiedbymodule")){
+	if(modified.classList.contains(MODBYMODULE)){
 	    alert("Found collision with: " +origId);
 	}
 	else{
-	    modified.classList.add("modifiedbymodule");
+	    modified.classList.add(MODBYMODULE);
 
 	    var note = document.createElement("div");
 	    note.classList.add("modifiedbymodulenote");
@@ -609,7 +608,6 @@ function applyModifyingGroup(parent, modname){
 		""+
 		"This component was redefined by the <a href='#"+modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
 	    modified.nextElementSibling.appendChild(note);
-//	    modified.getElementsByClassName("comp-notes")[0].appendChild(note);
 	}
     }
 }
@@ -619,35 +617,34 @@ function applyModifyingGroup(parent, modname){
 //     noteparent[0].appendChild(note);
 // }
 
-function areAnyMastersSelected(id){
-    var masters = elsByCls(id+"_m");
-    var bb;
-    for(bb=0; masters.length>bb; bb++){
-        if (masters[bb].checked){
-            return true;
-        }
-    }
-    return false;
-}
-
-function modifyMany( arrayOrElement, clazz, isAdd){
-    if( Array.isArray(arrayOrElement)){
-	var aa;
-	for(aa=arrayOrElement.length-1; aa>=0; aa--){
-	    modifyClassHelper(arrayOrElement[aa], clazz, isAdd);
-	}
-    }
-    else{
-	modifyClassHelper(arrayOrElement, clazz, isAdd);
-    }
-}
+// function areAnyMastersSelected(id){
+//     var masters = elsByCls(id+"_m");
+//     var bb;
+//     for(bb=0; masters.length>bb; bb++){
+//         if (masters[bb].checked){
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+// function modifyMany( arrayOrElement, clazz, isAdd){
+//     if( Array.isArray(arrayOrElement)){
+// 	var aa;
+// 	for(aa=arrayOrElement.length-1; aa>=0; aa--){
+// 	    modifyClassHelper(arrayOrElement[aa], clazz, isAdd);
+// 	}
+//     }
+//     else{
+// 	modifyClassHelper(arrayOrElement, clazz, isAdd);
+//     }
+// }
 
 /**
  * Handles when the checkbox infront of an objective or optional
  * requirements is checked.
  */
 function handleOCheck(el){
-    modifyClass(el.parentElement.nextElementSibling, "disabled", !el.checked);
+    modifyClass(el.parentElement.nextElementSibling, DISABLED, !el.checked);
 }
 
 /**
@@ -662,30 +659,33 @@ function modifyClass( el, clazz, isAdd ){
 
 
 
-/* 
- * This design does not account for cascading dependent components .
- * There are none currently, so this limitation is acceptable.
- */
-function updateDependency(ids){
-    var aa, bb;
+// /* 
+//  * This design does not account for cascading dependent components .
+//  * There are none currently, so this limitation is acceptable.
+//  */
+// function updateDependency(ids){
+//     var aa, bb;
 
-    // Run through all 
-    for(aa=0; ids.length>aa; aa++){     
-        var enabled = areAnyMastersSelected(ids[aa]);
-        // We might need to recur on these if the selection-based
-        // requirement had a dependent selection-based requirement.
-        modifyClass( elById(ids[aa]), "disabled", !enabled);
-        var sn_s = elsByCls(ids[aa]);
-        for(bb=0; sn_s.length>bb; bb++){
-            modifyClass(sn_s[bb], "disabled", !enabled)
-        }
-    }
-}
+//     // Run through all 
+//     for(aa=0; ids.length>aa; aa++){     
+//         var enabled = areAnyMastersSelected(ids[aa]);
+//         // We might need to recur on these if the selection-based
+//         // requirement had a dependent selection-based requirement.
+//         modifyClass( elById(ids[aa]), DISABLED, !enabled);
+//         var sn_s = elsByCls(ids[aa]);
+//         for(bb=0; sn_s.length>bb; bb++){
+//             modifyClass(sn_s[bb], DISABLED, !enabled)
+//         }
+//     }
+// }
 
 var sched;
 function update(el){
     if(isCheckbox(el)){
 	handleSelectionGroupUpdate(el);
+        // Checkboxes are the only thing that can
+	// change what is pulled in (more requirements or packages)
+	handleSelections();
     }
     validateRequirements();
     // if (sched != undefined){
@@ -694,6 +694,136 @@ function update(el){
     // sched = setTimeout(delayedUpdate, 1000);
 }
 
+/**
+ * This function figures out
+ * what components to pull in
+ * based on selections.
+ */
+function handleSelections(){
+    var aa;
+    // Disable all sel-based 
+    var selbased=elsByCls("sel-based");
+    for(aa=selbased.length-1;
+	aa>=0;
+	aa--)
+    {
+	selbased[aa].classList.add(DISABLED);
+    }
+    var baseId=getAppliedBaseId();
+    if (baseId == null) return;
+    var allImpSel = [];
+    var impSel = selmap[baseId];
+    for( selIds in impSel){
+	allImpSel.push(baseId+":"+selIds);
+    }
+    var appmods = getAppliedModuleIds();
+    for(aa=appmods.length-1;
+	aa>=0;
+	aa--)
+    {
+	var impSel = selmap[appmods[aa]];
+	for( selIds in impSel){
+	    allImpSel.push(appmods[aa]+":"+selIds);
+	}
+    }
+    while(allImpSel.length>0){
+	var selId  = allImpSel.pop();
+	var chkbx = elById(selId);
+	// If it's not checked, nothing to do
+	if (!chkbx.checked) continue;
+	// If it's not active, nothing to do
+	if (!isApplied(chkbx)) continue;
+	var splitty=selId.split(":");
+	var ppOrMod=splitty[0];
+	var localId=splitty[1];
+	var compIds = selmap[ppOrMod][localId];
+	for(aa=compIds.length-1;
+	    aa>=0;
+	    aa--){
+	    var newSels = enableDominantComponent(compIds[aa]);
+	    for(sel in newSels){
+		if (sel.id){
+		    allImpSel.push(sel.id);
+		}
+	    }
+	}
+    }
+}
+
+function enableDominantComponent(reqId){
+    var comps = elsByCls(reqId);
+    var aa=0;
+    for(aa=comps.length-1; 
+	aa>=0;
+	aa--)
+    {
+	var comp=comps[aa];
+	// If it's not visible, it's not the one
+	if (!isVisible(comp)) continue;
+
+
+	// If it's modified, it's not the one
+	if (comp.classList.contains('modifiedbymodule')) continue;
+	// We can assume we found it
+	// If it's already enabled, just leave
+	if (!comp.classList.contains(DISABLED)) 
+	    return [];
+	// Else
+	// Enable it
+	comp.classList.remove(DISABLED);
+	//
+	return comp.getElementsByClassName('selbox');
+    }
+    qq("Could not find an active requirement with ID: " +reqId);
+    return [];
+}
+
+
+/**
+ * Figures out if this element is part of an applied component
+ */
+function isApplied(el){
+    // ---
+    // Need to clean up this function
+    // --
+    while(el.classList.contains("component")){
+	if(el==document.root) return false;
+	el = el.parent;
+    }
+    // If the component isn't visible
+    if(!isVisible(el)) return false;
+
+    // If the component
+    if(el.classList.contains(DISABLED))         return false;
+    if(el.classList.contains('modifiedbymodule')) return false;
+
+    return true;
+}
+
+
+function getAppliedModuleIds(){
+    var appmods=[];
+    var aa=0;
+    var modchecks=elsByCls('modcheck');
+    for(aa=modchecks.length-1;
+	aa>=0;
+	aa--){
+	if( isVisible(modchecks[aa]) && modchecks[aa].checked){
+	    appmods.push(modchecks[aa].id.split(':')[1])
+	}
+    }
+    return appmods;
+}
+
+function getAppliedBaseId(){
+    var basechecks=elsByCls('basecheck');
+    var aa=0;
+    for(aa=basechecks.length-1; aa>=0; aa--){
+	if(basechecks[aa].checked) 
+	    return basechecks[aa].id.split(':')[1];
+    }
+    return null;
+}
 
 
 function validateSelectables(sel){
@@ -753,7 +883,7 @@ function handleKey(event){
             if(comps[aa].contains(curr)) break;
         }
         for(aa--; aa>=0; aa--){
-            if(comps[aa].classList.contains('disabled')) continue;
+            if(comps[aa].classList.contains(DISABLED)) continue;
             if(comps[aa].classList.contains('invalid')){
                 return setFocusOnComponent(comps[aa]);
             }
@@ -767,7 +897,7 @@ function handleKey(event){
             if(comps[aa].contains(curr)) break;
         }
         for(aa++; comps.length > aa; aa++){
-            if(comps[aa].classList.contains('disabled')) continue;
+            if(comps[aa].classList.contains(DISABLED)) continue;
             if(comps[aa].classList.contains('invalid')){
                 return setFocusOnComponent(comps[aa]);
             }
@@ -805,8 +935,13 @@ function reqValidator(elem){
     return true;
 }
 
+/**
+ * This validates all requirements regardless
+ * if they are visible, disabled,...
+ */
 function validateRequirements(){
     var aa;
+    // Check all requirements
     var reqs = elsByCls('requirement');
     for(aa=0; reqs.length > aa; aa++){
         if(reqValidator(reqs[aa])){
@@ -816,6 +951,7 @@ function validateRequirements(){
             addRemoveClasses(reqs[aa],'invalid','valid');
         }
     }
+    // Check all components
     var components = elsByCls('component');
     for(aa=0; components.length > aa; aa++){
         if(components[aa].getElementsByClassName('invalid').length == 0 ){
@@ -830,21 +966,22 @@ function validateRequirements(){
 function setCheckboxState(cbox, isEnabled){
     if(isEnabled){
 	cbox.disabled=false;
-	cbox.classList.remove('disabled');
-	cbox.nextSibling.classList.remove('disabled');
+	cbox.classList.remove(DISABLED);
+	cbox.nextSibling.classList.remove(DISABLED);
     }
     else{
 	cbox.disabled=true;
-	cbox.classList.add('disabled');
-	cbox.nextSibling.classList.add('disabled');
+	cbox.classList.add(DISABLED);
+	cbox.nextSibling.classList.add(DISABLED);
     }
 }
 
 function isExclusive(chk){
     return chk.classList.contains("exclusive");
 }
+
 /**
- *
+ * Handles the UI for a group of selections
  * @param chk Is the checkbox that the action happened on
  */
 function handleSelectionGroupUpdate(chk){
@@ -855,7 +992,6 @@ function handleSelectionGroupUpdate(chk){
     for(aa=0; group.length>aa ; aa++){
 	if(isSomethingChecked){                                    // If something's checked
 	    if(chk==group[aa]) continue;                           // We're not doing anything to chk
-	    qq("Here");
 	    if(chk.checked){                                       // If we just checked
 		if( isExclusive(chk) || isExclusive(group[aa])){ // And on or the oth
 		    setCheckboxState(group[aa], false);		    

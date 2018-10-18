@@ -29,6 +29,7 @@ class PPMap:
         self.modules=[]
 
     def make_js_selmap():
+        ret="var selmap={"
         for name in PPMap.basenameToDefs:
             map=PPMap.basenameToDefs[name]
             if map.base == None:
@@ -37,13 +38,13 @@ class PPMap:
                 continue
             base=PPMap.basenameToDefs[name].base
             id=PPObject.to_id(name)
-            print(base.get_js_selmap())
+            ret += base.get_js_selmap()
 
         # Run through all modules
         for name in PPMap.modnameToDef:
             mod=PPMap.modnameToDef[name]
-            print(mod.get_js_selmap())
-
+            ret +=mod.get_js_selmap()
+        return ret+"};"
 
     def add_mod(modobj, basetrees):
         """ Adds a module """
@@ -204,7 +205,8 @@ if __name__ == "__main__":
         # out.write(" const ORIG64='"+inb64+"';\n")
         # out.write(" const XSL64='"+xslb64+"';\n")
         out.write(js)
-        PPMap.make_js_selmap()
+        out.write("\n")
+        out.write(PPMap.make_js_selmap())
         PPMap.write_init_pp_structures(out)
         out.write( """
 //]]>
