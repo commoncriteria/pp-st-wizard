@@ -546,7 +546,7 @@
 		      The plaintext key is stored on an external storage device for use as
 		      an authorization factor
 		    </selectable>
-		    <selectable>The plaintext key is used to wrap a key as specified in <linkref
+		    <selectable id="ckm_wrapped">The plaintext key is used to wrap a key as specified in <linkref
 		    linkend="FCS_COP_EXT.2"/> that is already wrapped as specified in <linkref
 		    linkend="FCS_COP_EXT.2"/>
 		    </selectable>
@@ -1332,7 +1332,7 @@
 
       <f-component id="fcs_cop_ext.2" name="Key Wrapping">
 	<selection-depends req="fcs_kyc_ext.1.1" ids="implkeywrap"/>
-	<selection-depends req="fcs_ckm_ext.3.1" ids=""/>
+	<selection-depends req="fcs_ckm_ext.3.1" ids="ckm_wrapped"/>
 	<consistency-rationale>
 	  This SFR defines how clients wrap keys.
 	  It does not impact functionality described by the <base-name/> PP.

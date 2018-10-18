@@ -28,6 +28,22 @@ class PPMap:
         self.base=None
         self.modules=[]
 
+    def make_js_selmap():
+        for name in PPMap.basenameToDefs:
+            map=PPMap.basenameToDefs[name]
+            if map.base == None:
+                sys.err.print("Some module modifies an unknown base: "+name)
+                del PPMap.basenameToDefs[name]
+                continue
+            base=PPMap.basenameToDefs[name].base
+            id=PPObject.to_id(name)
+            print(base.get_js_selmap())
+
+        # Run through all modules
+        for name in PPMap.modnameToDef:
+            mod=PPMap.modnameToDef[name]
+            print(mod.get_js_selmap())
+
 
     def add_mod(modobj, basetrees):
         """ Adds a module """
@@ -140,6 +156,8 @@ if __name__ == "__main__":
 
     # Technical Decisions
     tds={}
+    teststring=""
+    if "test-cases" in sys.argv[5]: teststring=" (TEST PAGE)"
 
     #- Run through the rest of the inputs
     for inIndex in range(5, len(sys.argv)):
@@ -181,9 +199,12 @@ if __name__ == "__main__":
         out.write("""      </style>
            <script type='text/javascript'>//<![CDATA[
 """)
+
+
         # out.write(" const ORIG64='"+inb64+"';\n")
         # out.write(" const XSL64='"+xslb64+"';\n")
         out.write(js)
+        PPMap.make_js_selmap()
         PPMap.write_init_pp_structures(out)
         out.write( """
 //]]>
@@ -197,7 +218,7 @@ if __name__ == "__main__":
         Future Help Goes Here.
       </div>
       <div class="basepane">
-      <h1>Security Target Wizard</h1>
+      <h1>Security Target Wizard"""+ teststring+"""</h1>
       <div class='warning-pane'>
         <noscript><h2 class="warning">This page requires JavaScript.</h2></noscript>
            <h2 class="warning" id='url-warning' style="display: none;">

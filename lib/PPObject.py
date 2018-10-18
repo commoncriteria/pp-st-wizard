@@ -80,9 +80,20 @@ class PP:
         # Grab out name and make it an id
         self.id = to_id(theroot.attrib["name"])
         # Make mappings to selections
-        self.makeSelectionMap()
-        # :Basename
+        self.make_selmap()
+        # :Basename (Used when diving into the tree)
         self.basename=""
+
+    def get_js_selmap(self):
+        ret="{\n"
+        for selid in self.selMap:
+            ret+= "'"+selid+"':"
+            delim="["
+            for sel in self.selMap[selid]:
+                ret+=delim+"\""+sel+"\""
+                delim=","
+            ret+="],\n"
+        return ret+"}"
 
     def getVersion(self):
         " Gets a version of a Module or PP "
@@ -141,9 +152,6 @@ class PP:
 
     def make_id(self, localId):
         return self.id+":"+localId
-
-    def get_js_representation(self):
-        return "";
 
     def up(self, node):
         return self.parent_map[node]
@@ -226,14 +234,14 @@ class PP:
             id=""
             if "id" in child.attrib:
                 id = self.make_id(child.attrib["id"])
-            if id!="" and id in self.selMap:
-                onChange+="updateDependency("
-                delim="["
-                for sel in self.selMap[id]:
-                    classes+=" "+sel+"_m"
-                    onChange+=delim+"\""+sel+"\""
-                    delim=","
-                onChange+="]);"
+            # if id!="" and id in self.selMap:
+            #     onChange+="updateDependency("
+            #     delim="["
+            #     for sel in self.selMap[id]:
+            #         classes+=" "+sel+"_m"
+            #         onChange+=delim+"\""+sel+"\""
+            #         delim=","
+            #     onChange+="]);"
             chk+= " onchange='update(this); "+onChange+"'"
             chk+= " data-rindex='"+str(rindex)+"'"
             chk +=" class='val selbox"+classes+"'"
@@ -331,12 +339,14 @@ class PP:
             return self.handle_contents(node, show_text)
         return ""
 
+    # This is where the requirements are handled
     def handle_title(self, node):
         self.selectables_index=0
         ccid = self.up(node).attrib['id']
-        id=self.make_id(to_id(ccid))
+        safe_ccid=to_id(ccid)
+        id=self.make_id(safe_ccid)
         ret=""
-        ret+="<div id='"+ id +"' class='requirement'>"
+        ret+="<div id='"+ id +"' class='requirement "+safe_ccid+"'>"
         ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
         ret+="<div class='words'>"
         ret+=self.handle_contents(node, True)
@@ -373,7 +383,8 @@ class PP:
         ccid=node.attrib["id"]
         based=""
         if self.basename!="": based=to_id(self.basename)+":"
-        id=self.make_id(based+to_id(ccid))
+        safe_ccid=to_id(ccid)
+        id=self.make_id(based+safe_ccid)
         ret=""
         tooltip=""
         if status == "optional" or status == "objective":
@@ -387,7 +398,7 @@ class PP:
         # The only direct descendants are possible should be the children
         # What is this for
         # node.findall( 'cc:selection-depends', NS)
-        ret+=" class='component"
+        ret+=" class='component "+safe_ccid
         if status!="":
             ret+=" disabled"
         ret+="'>"
@@ -447,7 +458,7 @@ class PP:
                 ret+=self.handle_node(child, show_text)
         return ret
 
-    def makeSelectionMap(self):
+    def make_selmap(self):
         """
         Makes a dictionary that maps the master requirement ID
         to an array of slave component IDs
@@ -457,12 +468,11 @@ class PP:
         for element in self.root.findall( './/cc:selection-depends', NS):
             # req=element.attrib["req"]
             selIds=element.attrib["ids"]
-            slaveId=self.make_id(to_id(self.up(element).attrib["id"]))
-            for rawSelId in selIds.split(','):
-                selId = self.make_id(to_id(rawSelId))
-                reqs=[]
+            slaveId=self.up(element).attrib["id"]
+            for selId in selIds.split(','):
                 if selId in self.selMap:
                     reqs =self.selMap[selId]
+                else: reqs=[]
                 reqs.append(slaveId)
                 self.selMap[selId]=reqs
 
