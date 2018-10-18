@@ -390,7 +390,6 @@ class PP:
         # What is this for
         # node.findall( 'cc:selection-depends', NS)
         ret+=" class='component "+safe_ccid
-        print("Safe ID is: " + safe_ccid);
         if status== "sel-based":
             ret+=" sel-based"
         if status!="":

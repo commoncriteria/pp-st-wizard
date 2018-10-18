@@ -22,8 +22,6 @@ class PPMap:
     # List of all modules
     modnameToDef={}
 
-
-  
     def __init__(self):
         self.base=None
         self.modules=[]
@@ -214,7 +212,7 @@ if __name__ == "__main__":
     </head>
     <body onkeypress='handleKey(event); return true;' onload='init();'>
       <div id='fade-pane'>
-        Press <i>Control+'?'</i> (aka <i>Control+Shift+'/'</i> for help.
+        Press <i>Control+'?'</i> for help.
       </div>
       <div id='help-pane'>
         Future Help Goes Here.
