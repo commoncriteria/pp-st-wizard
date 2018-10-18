@@ -602,20 +602,22 @@ function applyModifyingGroup(parent, modname){
 	}
 	else{
 	    modified.classList.add("modifiedbymodule");
+
 	    var note = document.createElement("div");
 	    note.classList.add("modifiedbymodulenote");
 	    note.innerHTML=
 		""+
 		"This component was redefined by the <a href='#"+modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
-	    modified.getElementsByClassName("comp-notes")[0].appendChild(note);
+	    modified.nextElementSibling.appendChild(note);
+//	    modified.getElementsByClassName("comp-notes")[0].appendChild(note);
 	}
     }
 }
 
-function addNote(parent, classname, notemsg){
-    var noteparent = parent.getElementsByClassName("comp-notes");
-    noteparent[0].appendChild(note);
-}
+// function addNote(parent, classname, notemsg){
+//     var noteparent = parent.getElementsByClassName("comp-notes");
+//     noteparent[0].appendChild(note);
+// }
 
 function areAnyMastersSelected(id){
     var masters = elsByCls(id+"_m");

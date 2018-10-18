@@ -19,7 +19,7 @@ from xml.sax.saxutils import escape
 
 PPNS='https://niap-ccevs.org/cc/v1'
 HTMNS="http://www.w3.org/1999/xhtml"
-ns={"cc":PPNS, "htm":HTMNS}
+NS={"cc":PPNS, "htm":HTMNS}
 
 # Might need to fix this up. Lots of 
 # our IDs have parenthesis which are not technically legal.
@@ -84,20 +84,21 @@ class PP:
         self.basename=""
 
     def getVersion(self):
-        ver=self.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",ns).text
+        " Gets a version of a Module or PP "
+        ver=self.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",NS).text
         return float(ver)
 
     # TD is an XML representation of a technical decision
     def applyBunchOfTDs(self, bunch):
-        for td in bunch.findall("./cc:decision",ns):
+        for td in bunch.findall("./cc:decision",NS):
             self.applyTD(td)
             
     def applyTD(self, td):
         # We have a decision
-        for req in td.findall(".//cc:f-element", ns):
+        for req in td.findall(".//cc:f-element", NS):
             deadswitch=0
-            id=req.attrib['id']
-            oldel=self.root.find(".//cc:f-element[@id='"+id+"']", ns)
+            id=req.attrib['id']      
+            oldel=self.root.find(".//cc:f-element[@id='"+id+"']", NS)
             parent=self.up(oldel)
             # Figure out what child is this
             index=0
@@ -108,8 +109,6 @@ class PP:
             # Remove the old
             parent.remove(oldel)
             del self.parent_map[oldel]
-            print("Old tag is " + oldel.tag)
-            print("New tag is " + req.tag)
             # Add the new
             parent.insert(index, req)
             # Register my parent
@@ -125,8 +124,12 @@ class PP:
             if deadswitch==10:
                 break;
             note = ET.SubElement(parent, u'{%s}note'%PPNS)
-            note.text="Requirement '"+id.upper()+"' updated by TD #"+td.attrib['id']+ " issued on " + td.attrib['date']
-
+            note.text="Requirement '"+id.upper()+"' updated by TD "
+            anchor = ET.SubElement(note, u'{%s}a'%HTMNS)
+            anchor.text = "#"+td.attrib['id']+ " issued on " + td.attrib['date']
+            anchor.attrib['href']=td.attrib['url']
+            anchor.tail='.'
+            print("Anchor text="+anchor.text)
     
     def register_parents(self, root):
         "Registers the nodes to their parents for root and below"
@@ -166,29 +169,29 @@ class PP:
             defaultVal="O"
             
         ret+= "<tr><th>Management Function</th>"
-        for col in elem.findall( 'cc:manager', ns):
+        for col in elem.findall( 'cc:manager', NS):
             ret += "<th>"
             ret += self.handle_contents(col, True)
             ret += "</th>"
         ret+= "</tr>\n"
 
         # Step through the rows
-        for row in elem.findall( 'cc:management-function', ns):
+        for row in elem.findall( 'cc:management-function', NS):
             val={}
             # Build a dictionary where the key is 'ref' and
             # it maps to 'M', 'O', or '-'.
-            for man in row.findall( 'cc:M', ns):
+            for man in row.findall( 'cc:M', NS):
                 val[man.attrib['ref']]='M'
-            for opt in row.findall( 'cc:O', ns):
+            for opt in row.findall( 'cc:O', NS):
                 val[man.attrib['ref']]='O'
-            for das in row.findall( 'cc:_', ns):
+            for das in row.findall( 'cc:_', NS):
                 val[man.attrib['ref']]='-'
             # Now we convert this to the expected columns
             ret += "<tr>\n"
             # First column is the management function text
-            ret += "<td>"+self.handle_contents( row.find( 'cc:text', ns), True) + "</td>"
+            ret += "<td>"+self.handle_contents( row.find( 'cc:text', NS), True) + "</td>"
             # And step through every other column
-            for col in elem.findall( 'cc:manager', ns):
+            for col in elem.findall( 'cc:manager', NS):
                 ret += "<td>"
                 colId = col.attrib["id"]
                 if colId in val:
@@ -211,7 +214,7 @@ class PP:
 
         self.selectables_index+=1
         rindex=0
-        for child in node.findall("cc:selectable", ns):
+        for child in node.findall("cc:selectable", NS):
             contents = self.handle_contents(child,True)
             contentCtr+=len(contents)
             chk = "<input type='checkbox'"
@@ -318,7 +321,7 @@ class PP:
         
         # elif node.tag == cc("f-element") or node.tag == cc("a-element"):
         #     # Requirements are handled in the title section
-        #     return self.handle_contents( node.find( 'cc:title', ns), True)
+        #     return self.handle_contents( node.find( 'cc:title', NS), True)
         elif node.tag == cc("f-component") or node.tag == cc("a-component"):
             return self.handle_component(node)
         elif node.tag == cc("title"):
@@ -359,7 +362,7 @@ class PP:
 
     def handle_opt_obj(self, node, status):
         ret=""
-        for comp in node.findall('.//cc:f-component', ns):
+        for comp in node.findall('.//cc:f-component', NS):
             ret+=self.handle_component(comp, status)
         return ret
 
@@ -382,7 +385,7 @@ class PP:
         # ret = "<div onfocusin='handleEnter(this)' id='"+id+"'"
         # The only direct descendants are possible should be the children
         # What is this for
-        # node.findall( 'cc:selection-depends', ns)
+        # node.findall( 'cc:selection-depends', NS)
         ret+=" class='component"
         if status!="":
             ret+=" disabled"
@@ -398,11 +401,13 @@ class PP:
         ret+="\n<div class='reqgroup'>\n"
         ret+=self.handle_contents(node, False)
         ret+="\n</div>"
+        ret+="</span><!-- End: "+id+" -->\n"
         ret+="<span class='comp-notes'>"
-        for note in node.findall("cc:note", ns):
-            ret += "<div class='note'>"+note.text+"</div><!--End Note -->"
-        ret+="</span>"
-        ret+="</span><!-- End: "+id+" --><br/>"
+        for note in node.findall("cc:note", NS):
+            ret += "<div class='note'>"
+            ret += self.handle_node(note, True)
+            ret += "</div><!--End Note -->"
+        ret+="</span><br/>"
         return ret
 
 
@@ -448,7 +453,7 @@ class PP:
         Results are stored in self.selMap
         @returns nothing
         """
-        for element in self.root.findall( './/cc:selection-depends', ns):
+        for element in self.root.findall( './/cc:selection-depends', NS):
             # req=element.attrib["req"]
             selIds=element.attrib["ids"]
             slaveId=self.make_id(to_id(self.up(element).attrib["id"]))

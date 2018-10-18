@@ -83,7 +83,7 @@ class PPMap:
             mod=PPMap.modnameToDef[name]
             id=PPObject.to_id(name)
             out.write("<div class='hidable modcheckdiv")
-            for base in mod.root.findall(".//cc:base-pp",  PPObject.ns):
+            for base in mod.root.findall(".//cc:base-pp",  PPObject.NS):
                 out.write(" dep:")
                 out.write(PPObject.to_id(base.attrib["name"]))
             out.write("'>")
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     #- Run through the rest of the inputs
     for inIndex in range(5, len(sys.argv)):
         root = ET.parse(sys.argv[inIndex]).getroot()
-        bases = root.findall( ".//cc:base-pp", PPObject.ns)
+        bases = root.findall( ".//cc:base-pp", PPObject.NS)
         
         if len( bases ) > 0:
             PPMap.add_mod(PPObject.PP(root), bases)
@@ -157,8 +157,8 @@ if __name__ == "__main__":
     for tdpath in tds:
         td=tds[tdpath]
         appliedTD=False
-        for bunch in td.findall(".//cc:bunch", PPObject.ns):
-            for applies in bunch.findall("./cc:applies-to", PPObject.ns):
+        for bunch in td.findall(".//cc:bunch", PPObject.NS):
+            for applies in bunch.findall("./cc:applies-to", PPObject.NS):
                 name=applies.attrib["name"]
                 maxver=float(applies.attrib["max-inclusive"])
                 if name in PPMap.basenameToDefs:
@@ -168,7 +168,6 @@ if __name__ == "__main__":
                     module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
                 else: 
                     print("Could not find PP or PP-Mod with the name: " + name +". Ignoring.");
-                print("Applying bunch to " + name + " " + applies.attrib["max-inclusive"])
 
     with open(outfile, "w") as out:
         out.write(
