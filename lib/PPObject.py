@@ -19,7 +19,7 @@ from xml.sax.saxutils import escape
 
 PPNS='https://niap-ccevs.org/cc/v1'
 HTMNS="http://www.w3.org/1999/xhtml"
-ns={"cc":PPNS, "htm":HTMNS}
+NS={"cc":PPNS, "htm":HTMNS}
 
 # Might need to fix this up. Lots of 
 # our IDs have parenthesis which are not technically legal.
@@ -31,8 +31,9 @@ def to_id(name):
     ret = ret.replace("^", "_c")
     return ret.replace(" ", "_")
     
-def to_name(id):
-    return id.replace("_", " ")
+# Removing this as it's not up-to-date
+# def to_name(id):
+#     return id.replace("_", " ")
 
 
 def cc(tag):
@@ -79,25 +80,37 @@ class PP:
         # Grab out name and make it an id
         self.id = to_id(theroot.attrib["name"])
         # Make mappings to selections
-        self.makeSelectionMap()
-        # :Basename
+        self.make_selmap()
+        # :Basename (Used when diving into the tree)
         self.basename=""
 
+    def get_js_selmap(self):
+        ret="'"+self.id+"':{\n"
+        for selid in self.selMap:
+            ret+= "'"+selid+"':"
+            delim="["
+            for sel in self.selMap[selid]:
+                ret+=delim+"\""+to_id(sel)+"\""
+                delim=","
+            ret+="],\n"
+        return ret+"},"
+
     def getVersion(self):
-        ver=self.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",ns).text
+        " Gets a version of a Module or PP "
+        ver=self.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",NS).text
         return float(ver)
 
     # TD is an XML representation of a technical decision
     def applyBunchOfTDs(self, bunch):
-        for td in bunch.findall("./cc:decision",ns):
+        for td in bunch.findall("./cc:decision",NS):
             self.applyTD(td)
             
     def applyTD(self, td):
         # We have a decision
-        for req in td.findall(".//cc:f-element", ns):
+        for req in td.findall(".//cc:f-element", NS):
             deadswitch=0
-            id=req.attrib['id']
-            oldel=self.root.find(".//cc:f-element[@id='"+id+"']", ns)
+            id=req.attrib['id']      
+            oldel=self.root.find(".//cc:f-element[@id='"+id+"']", NS)
             parent=self.up(oldel)
             # Figure out what child is this
             index=0
@@ -108,8 +121,6 @@ class PP:
             # Remove the old
             parent.remove(oldel)
             del self.parent_map[oldel]
-            print("Old tag is " + oldel.tag)
-            print("New tag is " + req.tag)
             # Add the new
             parent.insert(index, req)
             # Register my parent
@@ -125,8 +136,11 @@ class PP:
             if deadswitch==10:
                 break;
             note = ET.SubElement(parent, u'{%s}note'%PPNS)
-            note.text="Requirement '"+id.upper()+"' updated by TD #"+td.attrib['id']+ " issued on " + td.attrib['date']
-
+            note.text="Requirement '"+id.upper()+"' updated by TD "
+            anchor = ET.SubElement(note, u'{%s}a'%HTMNS)
+            anchor.text = "#"+td.attrib['id']+ " issued on " + td.attrib['date']
+            anchor.attrib['href']=td.attrib['url']
+            anchor.tail='.'
     
     def register_parents(self, root):
         "Registers the nodes to their parents for root and below"
@@ -135,11 +149,8 @@ class PP:
             self.register_parents(child)
 
 
-    def make_id(self, localId):
+    def to_global_id(self, localId):
         return self.id+":"+localId
-
-    def get_js_representation(self):
-        return "";
 
     def up(self, node):
         return self.parent_map[node]
@@ -166,29 +177,29 @@ class PP:
             defaultVal="O"
             
         ret+= "<tr><th>Management Function</th>"
-        for col in elem.findall( 'cc:manager', ns):
+        for col in elem.findall( 'cc:manager', NS):
             ret += "<th>"
             ret += self.handle_contents(col, True)
             ret += "</th>"
         ret+= "</tr>\n"
 
         # Step through the rows
-        for row in elem.findall( 'cc:management-function', ns):
+        for row in elem.findall( 'cc:management-function', NS):
             val={}
             # Build a dictionary where the key is 'ref' and
             # it maps to 'M', 'O', or '-'.
-            for man in row.findall( 'cc:M', ns):
+            for man in row.findall( 'cc:M', NS):
                 val[man.attrib['ref']]='M'
-            for opt in row.findall( 'cc:O', ns):
+            for opt in row.findall( 'cc:O', NS):
                 val[man.attrib['ref']]='O'
-            for das in row.findall( 'cc:_', ns):
+            for das in row.findall( 'cc:_', NS):
                 val[man.attrib['ref']]='-'
             # Now we convert this to the expected columns
             ret += "<tr>\n"
             # First column is the management function text
-            ret += "<td>"+self.handle_contents( row.find( 'cc:text', ns), True) + "</td>"
+            ret += "<td>"+self.handle_contents( row.find( 'cc:text', NS), True) + "</td>"
             # And step through every other column
-            for col in elem.findall( 'cc:manager', ns):
+            for col in elem.findall( 'cc:manager', NS):
                 ret += "<td>"
                 colId = col.attrib["id"]
                 if colId in val:
@@ -211,7 +222,7 @@ class PP:
 
         self.selectables_index+=1
         rindex=0
-        for child in node.findall("cc:selectable", ns):
+        for child in node.findall("cc:selectable", NS):
             contents = self.handle_contents(child,True)
             contentCtr+=len(contents)
             chk = "<input type='checkbox'"
@@ -221,15 +232,7 @@ class PP:
                 classes=" exclusive "
             id=""
             if "id" in child.attrib:
-                id = self.make_id(child.attrib["id"])
-            if id!="" and id in self.selMap:
-                onChange+="updateDependency("
-                delim="["
-                for sel in self.selMap[id]:
-                    classes+=" "+sel+"_m"
-                    onChange+=delim+"\""+sel+"\""
-                    delim=","
-                onChange+="]);"
+                chk += " id='"+self.to_global_id(child.attrib["id"])+"'"
             chk+= " onchange='update(this); "+onChange+"'"
             chk+= " data-rindex='"+str(rindex)+"'"
             chk +=" class='val selbox"+classes+"'"
@@ -258,7 +261,7 @@ class PP:
         elif node.tag == cc("obj-sfrs"):
             return self.handle_opt_obj(node, "objective")
         elif node.tag == cc("sel-sfrs"):
-            return self.handle_opt_obj(node, "selbased")
+            return self.handle_opt_obj(node, "sel-based")
         elif node.tag == cc("selectables"):
             return self.handle_selectables(node)
         elif node.tag == cc("refinement"):
@@ -307,7 +310,7 @@ class PP:
             prefix=ctrtype+" "
             if "pre" in node.attrib:
                 prefix=node.attrib["pre"]
-            idAttr=self.make_id(node.attrib["id"])
+            idAttr=self.to_global_id(node.attrib["id"])
             ret="<span class='ctr' data-myid='"+idAttr+"+data-counter-type='ct-"
             ret+=ctrtype+"' id='cc-"+idAttr+"'>\n"
             ret+=prefix
@@ -318,7 +321,7 @@ class PP:
         
         # elif node.tag == cc("f-element") or node.tag == cc("a-element"):
         #     # Requirements are handled in the title section
-        #     return self.handle_contents( node.find( 'cc:title', ns), True)
+        #     return self.handle_contents( node.find( 'cc:title', NS), True)
         elif node.tag == cc("f-component") or node.tag == cc("a-component"):
             return self.handle_component(node)
         elif node.tag == cc("title"):
@@ -327,12 +330,14 @@ class PP:
             return self.handle_contents(node, show_text)
         return ""
 
+    # This is where the requirements are handled
     def handle_title(self, node):
         self.selectables_index=0
         ccid = self.up(node).attrib['id']
-        id=self.make_id(to_id(ccid))
+        safe_ccid=to_id(ccid)
+        id=self.to_global_id(safe_ccid)
         ret=""
-        ret+="<div id='"+ id +"' class='requirement'>"
+        ret+="<div id='"+ id +"' class='requirement "+safe_ccid+"'>"
         ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
         ret+="<div class='words'>"
         ret+=self.handle_contents(node, True)
@@ -343,7 +348,7 @@ class PP:
     def handle_base(self, node):
         self.basename=node.attrib["name"]
         baseId= to_id(self.basename)
-        safeId= self.make_id(baseId)
+        safeId= self.to_global_id(baseId)
         ret = "<div id='"+safeId+"' class='dep:"+baseId+"'>\n"
         ret += self.handle_contents(node, False)
         ret += "</div><!--Endbase dep:"+baseId+" -->\n"
@@ -359,7 +364,7 @@ class PP:
 
     def handle_opt_obj(self, node, status):
         ret=""
-        for comp in node.findall('.//cc:f-component', ns):
+        for comp in node.findall('.//cc:f-component', NS):
             ret+=self.handle_component(comp, status)
         return ret
 
@@ -369,7 +374,8 @@ class PP:
         ccid=node.attrib["id"]
         based=""
         if self.basename!="": based=to_id(self.basename)+":"
-        id=self.make_id(based+to_id(ccid))
+        safe_ccid=to_id(ccid)
+        id=self.to_global_id(based+safe_ccid)
         ret=""
         tooltip=""
         if status == "optional" or status == "objective":
@@ -382,8 +388,10 @@ class PP:
         # ret = "<div onfocusin='handleEnter(this)' id='"+id+"'"
         # The only direct descendants are possible should be the children
         # What is this for
-        # node.findall( 'cc:selection-depends', ns)
-        ret+=" class='component"
+        # node.findall( 'cc:selection-depends', NS)
+        ret+=" class='component "+safe_ccid
+        if status== "sel-based":
+            ret+=" sel-based"
         if status!="":
             ret+=" disabled"
         ret+="'>"
@@ -398,11 +406,13 @@ class PP:
         ret+="\n<div class='reqgroup'>\n"
         ret+=self.handle_contents(node, False)
         ret+="\n</div>"
+        ret+="</span><!-- End: "+id+" -->\n"
         ret+="<span class='comp-notes'>"
-        for note in node.findall("cc:note", ns):
-            ret += "<div class='note'>"+note.text+"</div><!--End Note -->"
-        ret+="</span>"
-        ret+="</span><!-- End: "+id+" --><br/>"
+        for note in node.findall("cc:note", NS):
+            ret += "<div class='note'>"
+            ret += self.handle_node(note, True)
+            ret += "</div><!--End Note -->"
+        ret+="</span><br/>"
         return ret
 
 
@@ -441,22 +451,21 @@ class PP:
                 ret+=self.handle_node(child, show_text)
         return ret
 
-    def makeSelectionMap(self):
+    def make_selmap(self):
         """
         Makes a dictionary that maps the master requirement ID
         to an array of slave component IDs
         Results are stored in self.selMap
         @returns nothing
         """
-        for element in self.root.findall( './/cc:selection-depends', ns):
+        for element in self.root.findall( './/cc:selection-depends', NS):
             # req=element.attrib["req"]
             selIds=element.attrib["ids"]
-            slaveId=self.make_id(to_id(self.up(element).attrib["id"]))
-            for rawSelId in selIds.split(','):
-                selId = self.make_id(to_id(rawSelId))
-                reqs=[]
+            slaveId=self.up(element).attrib["id"]
+            for selId in selIds.split(','):
                 if selId in self.selMap:
                     reqs =self.selMap[selId]
+                else: reqs=[]
                 reqs.append(slaveId)
                 self.selMap[selId]=reqs
 

@@ -22,12 +22,27 @@ class PPMap:
     # List of all modules
     modnameToDef={}
 
-
-  
     def __init__(self):
         self.base=None
         self.modules=[]
 
+    def make_js_selmap():
+        ret="var selmap={"
+        for name in PPMap.basenameToDefs:
+            map=PPMap.basenameToDefs[name]
+            if map.base == None:
+                sys.err.print("Some module modifies an unknown base: "+name)
+                del PPMap.basenameToDefs[name]
+                continue
+            base=PPMap.basenameToDefs[name].base
+            id=PPObject.to_id(name)
+            ret += base.get_js_selmap()
+
+        # Run through all modules
+        for name in PPMap.modnameToDef:
+            mod=PPMap.modnameToDef[name]
+            ret +=mod.get_js_selmap()
+        return ret+"};"
 
     def add_mod(modobj, basetrees):
         """ Adds a module """
@@ -80,7 +95,7 @@ class PPMap:
             mod=PPMap.modnameToDef[name]
             id=PPObject.to_id(name)
             out.write("<div class='hidable modcheckdiv")
-            for base in mod.root.findall(".//cc:base-pp",  PPObject.ns):
+            for base in mod.root.findall(".//cc:base-pp",  PPObject.NS):
                 out.write(" dep:")
                 out.write(PPObject.to_id(base.attrib["name"]))
             out.write("'>")
@@ -141,11 +156,13 @@ if __name__ == "__main__":
 
     # Technical Decisions
     tds={}
+    teststring=""
+    if "test-cases" in sys.argv[5]: teststring=" (TEST PAGE)"
 
     #- Run through the rest of the inputs
     for inIndex in range(5, len(sys.argv)):
         root = ET.parse(sys.argv[inIndex]).getroot()
-        bases = root.findall( ".//cc:base-pp", PPObject.ns)
+        bases = root.findall( ".//cc:base-pp", PPObject.NS)
         
         if len( bases ) > 0:
             PPMap.add_mod(PPObject.PP(root), bases)
@@ -158,8 +175,8 @@ if __name__ == "__main__":
     for tdpath in tds:
         td=tds[tdpath]
         appliedTD=False
-        for bunch in td.findall(".//cc:bunch", PPObject.ns):
-            for applies in bunch.findall("./cc:applies-to", PPObject.ns):
+        for bunch in td.findall(".//cc:bunch", PPObject.NS):
+            for applies in bunch.findall("./cc:applies-to", PPObject.NS):
                 name=applies.attrib["name"]
                 maxver=float(applies.attrib["max-inclusive"])
                 if name in PPMap.basenameToDefs:
@@ -169,7 +186,6 @@ if __name__ == "__main__":
                     module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
                 else: 
                     print("Could not find PP or PP-Mod with the name: " + name +". Ignoring.");
-                print("Applying bunch to " + name + " " + applies.attrib["max-inclusive"])
 
     with open(outfile, "w") as out:
         out.write(
@@ -183,9 +199,13 @@ if __name__ == "__main__":
         out.write("""      </style>
            <script type='text/javascript'>//<![CDATA[
 """)
+
+
         # out.write(" const ORIG64='"+inb64+"';\n")
         # out.write(" const XSL64='"+xslb64+"';\n")
         out.write(js)
+        out.write("\n")
+        out.write(PPMap.make_js_selmap())
         PPMap.write_init_pp_structures(out)
         out.write( """
 //]]>
@@ -193,13 +213,13 @@ if __name__ == "__main__":
     </head>
     <body onkeypress='handleKey(event); return true;' onload='init();'>
       <div id='fade-pane'>
-        Press <i>Control+'?'</i> (aka <i>Control+Shift+'/'</i> for help.
+        Press <i>Control+'?'</i> for help.
       </div>
       <div id='help-pane'>
         Future Help Goes Here.
       </div>
       <div class="basepane">
-      <h1>Security Target Wizard</h1>
+      <h1>Security Target Wizard"""+ teststring+"""</h1>
       <div class='warning-pane'>
         <noscript><h2 class="warning">This page requires JavaScript.</h2></noscript>
            <h2 class="warning" id='url-warning' style="display: none;">
