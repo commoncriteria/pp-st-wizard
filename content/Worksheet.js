@@ -19,15 +19,16 @@ const HIDE="none";
 const SHOW="block";
 const DISABLED="disabled";
 const MODBYMODULE='modifiedbymodule';
+const DEP="dep:"
 const AMPERSAND=String.fromCharCode(38);
 const LT=String.fromCharCode(60);
 
 /// Holds the prefix for the settings we care about
 var prefix="";
 
-/// Dictionary to hold all the cookies
-var cookieJar=[];
-
+/// Effective Selection Map (This should be a class probably)
+var effSelMap={};
+var effSelOwnerMap={};
 
 //////////////////////////////////////////////////
 // Aliases
@@ -47,6 +48,10 @@ function elById(id){
     return document.getElementById(id);
 }
 
+function forEach(array, func){
+    Array.prototype.forEach.call(array, func);
+}
+
 //////////////////////////////////////////////////
 // Stolen from the regular PP project
 //////////////////////////////////////////////////
@@ -62,6 +67,21 @@ function showTarget(id){
 //////////////////////////////////////////////////
 // End stolen section
 //////////////////////////////////////////////////
+
+//////////////////////////////////////////////////
+// Primatives
+//////////////////////////////////////////////////
+
+/**
+ * Records a major error.
+ */
+function error(msg){
+    Console.log("Error: "+msg);
+}
+
+function isCheckbox(elem){
+    return elem.getAttribute("type") == "checkbox";
+}
 
 
 /**
@@ -80,20 +100,16 @@ function performActionOnElements(elements, fun){
         fun(elements[aa], aa);
     }
 }
+
 var prevCheckbox = false;
+/**
+ *
+ */
 function isPrevCheckbox(elem){
     var ret = prevCheckbox;
     prevCheckbox = false;
     return ret;
 }
-
-function isCheckbox(elem){
-    return elem.getAttribute("type") == "checkbox";
-}
-
-function getId(index){
-    return "v_" + index;
-} 
 
 
 // function retrieveBase(name){
@@ -122,40 +138,6 @@ function handleEnter(elem){
     }
 }
 
-function saveToCookieJar(elem, index){
-    var id = prefix+":"+getId(index);
-    if( isCheckbox(elem)){
-        cookieJar[id]=elem.checked;
-    }
-    else if( elem.tagName == 'SELECT' ){
-        cookieJar[id]=elem.selectedIndex;
-    }
-    else{
-        if(elem.value != undefined){
-            if( elem.value != "undefined" ) cookieJar[id]=elem.value;
-        }
-    }
-}
-
-
-function retrieveFromCookieJar(elem, index){
-    var id = prefix+":"+getId(index);
-    if( isCheckbox(elem)){
-        elem.checked= (cookieJar[id] == "true");
-    }
-    else if( elem.tagName == 'SELECT' ){
-        if( id in cookieJar ){
-            elem.selectedIndex = cookieJar[id];
-        }
-    }
-    else{
-        if( id in cookieJar) {
-            if(cookieJar[id] != "undefined"){
-                elem.value= cookieJar[id];
-            }
-        }
-    }
-}
 function killFade(){
     var fp = elById("fade-pane");
     fp.parentNode.removeChild(fp);
@@ -169,6 +151,9 @@ function fixToolTips(){
   }
 }
 
+/**
+ * The initialization function.
+ */
 function init(){
     if( document.URL.startsWith("file:///") ){
         var warn = elById("url-warning");
@@ -198,6 +183,48 @@ function init(){
 // ##################################################
 // #               Cookie functions
 // ##################################################
+
+/// Dictionary to hold all the cookies
+var cookieJar=[];
+
+function saveToCookieJar(elem, index){
+    var id = prefix+":"+getId(index);
+    if( isCheckbox(elem)){
+        cookieJar[id]=elem.checked;
+    }
+    else if( elem.tagName == 'SELECT' ){
+        cookieJar[id]=elem.selectedIndex;
+    }
+    else{
+        if(elem.value != undefined){
+            if( elem.value != "undefined" ) cookieJar[id]=elem.value;
+        }
+    }
+}
+
+function getId(index){
+    return "v_" + index;
+} 
+
+
+function retrieveFromCookieJar(elem, index){
+    var id = prefix+":"+getId(index);
+    if( isCheckbox(elem)){
+        elem.checked= (cookieJar[id] == "true");
+    }
+    else if( elem.tagName == 'SELECT' ){
+        if( id in cookieJar ){
+            elem.selectedIndex = cookieJar[id];
+        }
+    }
+    else{
+        if( id in cookieJar) {
+            if(cookieJar[id] != "undefined"){
+                elem.value= cookieJar[id];
+            }
+        }
+    }
+}
 
 function readAllCookies() {
     ret=[];
@@ -515,7 +542,7 @@ function hideAllDependents(classname){
     var masters = elsByCls(classname);
     for(aa=masters.length-1; aa>=0; aa--){
 	var id = masters[aa].id.split(":")[1];
-	setVisibility(elsByCls("dep:"+id), false);
+	setVisibility(elsByCls(DEP+id), false);
     }
     return masters;
 }
@@ -538,7 +565,7 @@ function baseChange(changed){
 	    }
 	}
 	var baseId = changed.id.split(":")[1];
-	setVisibility(elsByCls("dep:"+baseId),true);
+	setVisibility(elsByCls(DEP+baseId),true);
     }
 
     // Trigger module change
@@ -552,17 +579,20 @@ function isVisible(el){
     return el.offsetParent != null
 }
 
+/**
+ * moduleChange handler
+ */
 function moduleChange(){
     // Hide everything
     var modchecks = hideAllDependents("modcheck");
     var aa;
+
     // Figure out what to show
     for(aa=modchecks.length-1; aa>=0; aa--){
-	// 
 	if(isVisible(modchecks[aa]) &&  
 	   modchecks[aa].checked){
 	    var modId = modchecks[aa].id.split(":")[1];
-	    setVisibility(elsByCls("dep:"+modId), true);
+	    setVisibility(elsByCls(DEP+modId), true);
 	}
     }
 
@@ -578,12 +608,40 @@ function moduleChange(){
 
     // Find all mod sfrs that are applied.
     var modifying = elsByCls("mod_sfrs");
-
     for(aa=modifying.length-1; aa>=0; aa--){
 	if(isVisible(modifying[aa])){
 	    var modname = modifying[aa].parentNode.previousSibling.innerHTML;
 	    applyModifyingGroup(modifying[aa], modname);
 	}
+    }
+    // Clear "Effective Selections Map"
+    effSelMap={};
+    effSelMapOwner={};
+    // Build a new one
+    var baseId=getAppliedBaseId();
+    if(baseId==null) return;
+    var baseMap=selMap[baseId]
+    addEffectiveSelectionIds(selMap[baseId], baseId, true);
+    var modIds = getAppliedModuleIds();
+    for (modId in modIds){
+	addEffectiveSelectionIds(selMap[modId], modId, false);
+    }
+}
+
+function addEffectiveSelectionIds(map, parentId, isbase){
+    for(selId in map){
+	var triggered;
+	if( selId in effSelMap){	// If one exists
+	    triggered=effSelMap[selId];	// Take it
+	}				// 
+	else{				// 
+	    triggered={};		// Make a new one
+	}				// 
+	for( newone in map[selId] ){	// Go through all the new ones
+	    triggered[newone]="1";	// And Them
+	}
+	effSelMap[selId]=triggered;
+	effSelMapOwner[selId]=parentId;
     }
 }
 
@@ -601,12 +659,13 @@ function applyModifyingGroup(parent, modname){
 	}
 	else{
 	    modified.classList.add(MODBYMODULE);
-
 	    var note = document.createElement("div");
 	    note.classList.add("modifiedbymodulenote");
 	    note.innerHTML=
 		""+
-		"This component was redefined by the <a href='#"+modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
+		"This component was redefined by the <a href='#"+ 
+		modsfrs[aa].id+"'><i>" + modname+ "</i> module</a>";
+
 	    modified.nextElementSibling.appendChild(note);
 	}
     }
@@ -701,34 +760,26 @@ function update(el){
  */
 function handleSelections(){
     var aa;
-    // Disable all sel-based 
-    var selbased=elsByCls("sel-based");
-    for(aa=selbased.length-1;
-	aa>=0;
-	aa--)
-    {
-	selbased[aa].classList.add(DISABLED);
-    }
+
+    // Disable all sel-based requirements.
+    forEach(elsByCls("sel-based"), function(el){
+	el.classList.add(DISABLED);
+    })
+
+    // 
     var baseId=getAppliedBaseId();
     if (baseId == null) return;
-    var allImpSel = [];
-    var impSel = selmap[baseId];
-    for( selIds in impSel){
-	allImpSel.push(baseId+":"+selIds);
+
+    var selIds = [];
+    for (sel in effSelMap){
+	selIds.push([effSelMapOwner,sel]);
     }
-    var appmods = getAppliedModuleIds();
-    for(aa=appmods.length-1;
-	aa>=0;
-	aa--)
-    {
-	var impSel = selmap[appmods[aa]];
-	for( selIds in impSel){
-	    allImpSel.push(appmods[aa]+":"+selIds);
-	}
-    }
-    while(allImpSel.length>0){
-	var selId  = allImpSel.pop();
-	var chkbx = elById(selId);
+    return;
+    while(selIds.length>0){
+	var tuple  = selIds.pop();
+	var selId=tuple[1];
+	var ppowner=tuple[0];
+	var chkbxs = elByCl(ppowner+":"+selId);
 	// If it's not checked, nothing to do
 	if (!chkbx.checked) continue;
 	// If it's not active, nothing to do
@@ -736,19 +787,20 @@ function handleSelections(){
 	var splitty=selId.split(":");
 	var ppOrMod=splitty[0];
 	var localId=splitty[1];
-	var compIds = selmap[ppOrMod][localId];
+	var compIds = selMap[ppOrMod][localId];
 	for(aa=compIds.length-1;
 	    aa>=0;
 	    aa--){
 	    var newSels = enableDominantComponent(compIds[aa]);
 	    for(sel in newSels){
 		if (sel.id){
-		    allImpSel.push(sel.id);
+		    selIds.push(sel.id);
 		}
 	    }
 	}
     }
 }
+
 
 function enableDominantComponent(reqId){
     var comps = elsByCls(reqId);
@@ -760,8 +812,6 @@ function enableDominantComponent(reqId){
 	var comp=comps[aa];
 	// If it's not visible, it's not the one
 	if (!isVisible(comp)) continue;
-
-
 	// If it's modified, it's not the one
 	if (comp.classList.contains('modifiedbymodule')) continue;
 	// We can assume we found it
@@ -771,13 +821,18 @@ function enableDominantComponent(reqId){
 	// Else
 	// Enable it
 	comp.classList.remove(DISABLED);
+	var owner = comp.id.split(":")[0];
+	var selboxes=comp.getElementsByClassName('selbox');
+	var bb, ret=[];
+	for(bb=selboxes.length-1; bb>=0; bb--){
+	    ret.push([owner, selboxes.id.split(":")[1]]);
+	}
 	//
-	return comp.getElementsByClassName('selbox');
+	return ret;
     }
-    qq("Could not find an active requirement with ID: " +reqId);
+    error("Could not find an active requirement with ID: " +reqId);
     return [];
 }
-
 
 /**
  * Figures out if this element is part of an applied component
@@ -800,7 +855,10 @@ function isApplied(el){
     return true;
 }
 
-
+/**
+ * Gets a list of the active module ids.
+ * @returns a list of modules that are checked
+ */
 function getAppliedModuleIds(){
     var appmods=[];
     var aa=0;
@@ -815,6 +873,10 @@ function getAppliedModuleIds(){
     return appmods;
 }
 
+/**
+ * Gets the id of the base that is checked.
+ * @return the id of the checked base (or null if there's none).
+ */
 function getAppliedBaseId(){
     var basechecks=elsByCls('basecheck');
     var aa=0;

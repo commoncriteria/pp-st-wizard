@@ -133,6 +133,13 @@ div{
     display: none;
 }
 
+.component.modifiedbymodule{
+    pointer-events: none;
+}
+
+.comp-notes{
+    pointer-event: all;
+}
 
 .disabled {
     opacity: .2;
