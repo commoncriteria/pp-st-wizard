@@ -641,6 +641,7 @@ function addEffectiveSelectionIds(map, parentId, isbase){
 	    triggered[newone]="1";	// And Them
 	}
 	effSelMap[selId]=triggered;
+	// Map the id to the parent
 	effSelMapOwner[selId]=parentId;
     }
 }
@@ -772,36 +773,40 @@ function handleSelections(){
 
     var selIds = [];
     for (sel in effSelMap){
-	selIds.push([effSelMapOwner,sel]);
+	selIds.push([effSelMapOwner[sel],sel]);
+	
+
+
     }
-    return;
     while(selIds.length>0){
 	var tuple  = selIds.pop();
-	var selId=tuple[1];
 	var ppowner=tuple[0];
-	var chkbxs = elByCl(ppowner+":"+selId);
+	var selId=tuple[1];
+	var chkbx = elById(ppowner+":"+selId);
 	// If it's not checked, nothing to do
+	// (no more to pull in)
 	if (!chkbx.checked) continue;
 	// If it's not active, nothing to do
 	if (!isApplied(chkbx)) continue;
-	var splitty=selId.split(":");
-	var ppOrMod=splitty[0];
-	var localId=splitty[1];
-	var compIds = selMap[ppOrMod][localId];
-	for(aa=compIds.length-1;
-	    aa>=0;
-	    aa--){
-	    var newSels = enableDominantComponent(compIds[aa]);
+	var localMap =selMap[ppowner] ;
+	qq("Looked for " + ppowner+":"+selId);
+	var compIds = localMap[selId];
+	for(compId in compIds){
+	    qq("Adding : " + compId);
+	    var newSels = enableDominantComponent(compId);
+	    qq("Size is : "+newSels.length);
 	    for(sel in newSels){
 		if (sel.id){
-		    selIds.push(sel.id);
+		    selIds.push(sel.split(":"));
 		}
 	    }
 	}
     }
 }
 
-
+/**
+ * 
+ */
 function enableDominantComponent(reqId){
     var comps = elsByCls(reqId);
     var aa=0;
@@ -821,11 +826,13 @@ function enableDominantComponent(reqId){
 	// Else
 	// Enable it
 	comp.classList.remove(DISABLED);
-	var owner = comp.id.split(":")[0];
+	// var splittedID = comp.id.split(":")[0];
 	var selboxes=comp.getElementsByClassName('selbox');
 	var bb, ret=[];
 	for(bb=selboxes.length-1; bb>=0; bb--){
-	    ret.push([owner, selboxes.id.split(":")[1]]);
+	    if(selboxes[bb].hasAttribute("id")){
+		ret.push(selboxes[bb].id.split(":"));
+	    }
 	}
 	//
 	return ret;
