@@ -27,7 +27,7 @@ class PPMap:
         self.modules=[]
 
     def make_js_selmap():
-        ret="var selmap={"
+        ret="var selMap={"
         for name in PPMap.basenameToDefs:
             map=PPMap.basenameToDefs[name]
             if map.base == None:
@@ -77,12 +77,9 @@ class PPMap:
             # THis will break if modules have a double quote in their name
             # Probably no risk of that.
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
-            out.write(" data-mods='")
-            for module in map.modules:
-                modname=module.root.attrib["name"]
-                out.write(modname+",")
             out.write("' id='bases:"+id+"'></input>")
-            out.write(name + "<br/>\n")
+            out.write(name+ " ")
+            out.write(map.base.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",PPObject.NS).text+ "<br/>\n")
             # for module in map.modules:
         out.write("</div>\n")
         
@@ -103,7 +100,11 @@ class PPMap:
                 out.write(PPObject.to_id(base.attrib["name"]))
             out.write("'>")
             out.write("<input type='checkbox' class='modcheck' onchange='moduleChange()' id='mods:"+id+"'></input>")
-            out.write(name + "</div>\n")
+            out.write(name + " ")
+            out.write(mod.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",PPObject.NS).text+ "<br/>\n")
+            out.write("</div>\n")
+
+
         out.write("</div>") # Ends ws_mods
 
         # Run through all the bases

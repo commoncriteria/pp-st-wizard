@@ -133,20 +133,24 @@ div{
     display: none;
 }
 
+.component.modifiedbymodule{
+    pointer-events: none;
+}
+
+.comp-notes{
+    pointer-event: all;
+}
 
 .disabled {
     opacity: .2;
     pointer-events: none;
 }
 
-.disabled .modcheckdiv{
+.disabled .modcheckdiv, .disabled .f-comp-status{
     display: none;
 }
 
 
-.disabled .f-comp-status{
-    display: none;
-}
 
 .warning{
     text-align:center;

@@ -88,11 +88,11 @@ class PP:
         ret="'"+self.id+"':{\n"
         for selid in self.selMap:
             ret+= "'"+selid+"':"
-            delim="["
+            delim="{"
             for sel in self.selMap[selid]:
                 ret+=delim+"\""+to_id(sel)+"\""
-                delim=","
-            ret+="],\n"
+                delim=":1,"
+            ret+=":1},\n"
         return ret+"},"
 
     def getVersion(self):
@@ -229,10 +229,11 @@ class PP:
             onChange=""
             classes=""
             if attr(child,"exclusive") == "yes":
-                classes=" exclusive "
+                classes=" exclusive"
             id=""
             if "id" in child.attrib:
                 chk += " id='"+self.to_global_id(child.attrib["id"])+"'"
+                classes+=" "+child.attrib["id"];
             chk+= " onchange='update(this); "+onChange+"'"
             chk+= " data-rindex='"+str(rindex)+"'"
             chk +=" class='val selbox"+classes+"'"
