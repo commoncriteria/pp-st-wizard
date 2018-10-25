@@ -104,13 +104,21 @@ class PP:
     def applyBunchOfTDs(self, bunch):
         for td in bunch.findall("./cc:decision",NS):
             self.applyTD(td)
-            
+
+    def dump(el):
+        for att in el.attrib:
+            print(att+"='"+el.attrib[att]+"'")
+
     def applyTD(self, td):
         # We have a decision
         for req in td.findall(".//cc:f-element", NS):
             deadswitch=0
-            id=req.attrib['id']      
+            id=req.attrib['id']
+            sys.stderr.write("Looking for |"+id+"|\n")
             oldel=self.root.find(".//cc:f-element[@id='"+id+"']", NS)
+            if oldel==None:
+                sys.stderr.write("Failed to find '"+ id + "' in "+self.root.attrib["name"]);
+                continue
             parent=self.up(oldel)
             # Figure out what child is this
             index=0

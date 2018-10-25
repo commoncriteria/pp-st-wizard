@@ -183,9 +183,10 @@ if __name__ == "__main__":
                     ppobj=PPMap.basenameToDefs[name].base
                     if maxver >= ppobj.getVersion(): ppobj.applyBunchOfTDs(bunch)
                 elif name in PPMap.modnameToDef:
-                    module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
+                    module=PPMap.modulenameToDef[name]
+                    if maxver >= module.getVersion(): module.applyBunchOfTDs(bunch)
                 else: 
-                    print("Could not find PP or PP-Mod with the name: " + name +". Ignoring.");
+                    print("Failed to find '" + name +"' as referenced in '"+tdpath+"'. Ignoring.");
 
     with open(outfile, "w") as out:
         out.write(
