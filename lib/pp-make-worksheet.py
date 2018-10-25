@@ -121,7 +121,7 @@ class PPMap:
         for name in sorted(PPMap.modnameToDef):
             mod=PPMap.modnameToDef[name]
             id=PPObject.to_id(name)
-            out.write("<div class='hidable dep:"+id + "'>");
+            out.write("<div class='hidable dep:"+id + "' id='module:"+id+"'>");
             out.write("<h3>"+mod.root.attrib["name"]+"</h3>")
             obj = mod
             out.write(obj.handle_contents(obj.root, False))

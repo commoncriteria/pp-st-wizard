@@ -112,17 +112,6 @@ function isPrevCheckbox(elem){
 }
 
 
-// function retrieveBase(name){
-//     var xhttp = new XMLHttpRequest();
-//     xhttp.onreadystatechange = function() {
-//         if (this.readyState == 4 && this.status == 200) {
-// 	    pp_xml = xhttp.responseXML.documentElement
-//         }
-//     };
-//     xhttp.open("GET", name, true);
-//     xhttp.send();
-// }
-
 
 // elem is a component element
 function handleEnter(elem){
@@ -371,6 +360,17 @@ function generateReport(){
     var aa;
     report += LT+"report xmlns='https://niap-ccevs.org/cc/pp/report/v1'>"
 
+
+    var baseId=getAppliedBaseId();
+    if(baseId==null) return;
+    var section = elById("base:"+baseId);
+
+
+
+    var modIds = getAppliedModuleIds();
+    
+
+
     var kids = elsByCls('requirement');
     var isInvalid = false;
     for(aa=0; kids.length>aa; aa++){
@@ -388,7 +388,8 @@ function generateReport(){
     var blobTheBuilder = new MyBlobBuilder();
     blobTheBuilder.append(report);
 
-    initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
+//    initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
+    initiateDownload('Report.txt', blobTheBuilder.getBlob("text"));
 }
 
 function getRequirements(nodes){
@@ -588,7 +589,33 @@ function moduleChange(){
     var aa;
 
     // Figure out what to show
-    for(aa=modchecks.length-1; aa>=0; aa--){
+    for(aa=modchecks.length-1; aa>=0; aa--){// function addNote(parent, classname, notemsg){
+//     var noteparent = parent.getElementsByClassName("comp-notes");
+//     noteparent[0].appendChild(note);
+// }
+
+// function areAnyMastersSelected(id){
+//     var masters = elsByCls(id+"_m");
+//     var bb;
+//     for(bb=0; masters.length>bb; bb++){
+//         if (masters[bb].checked){
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+// function modifyMany( arrayOrElement, clazz, isAdd){
+//     if( Array.isArray(arrayOrElement)){
+// 	var aa;
+// 	for(aa=arrayOrElement.length-1; aa>=0; aa--){
+// 	    modifyClassHelper(arrayOrElement[aa], clazz, isAdd);
+// 	}
+//     }
+//     else{
+// 	modifyClassHelper(arrayOrElement, clazz, isAdd);
+//     }
+// }
+
 	if(isVisible(modchecks[aa]) &&  
 	   modchecks[aa].checked){
 	    var modId = modchecks[aa].id.split(":")[1];
@@ -620,6 +647,7 @@ function moduleChange(){
     // Build a new one
     var baseId=getAppliedBaseId();
     if(baseId==null) return;
+    // selMap is generated dynamically
     var baseMap=selMap[baseId]
     addEffectiveSelectionIds(selMap[baseId], baseId, true);
     var modIds = getAppliedModuleIds();
@@ -672,32 +700,6 @@ function applyModifyingGroup(parent, modname){
     }
 }
 
-// function addNote(parent, classname, notemsg){
-//     var noteparent = parent.getElementsByClassName("comp-notes");
-//     noteparent[0].appendChild(note);
-// }
-
-// function areAnyMastersSelected(id){
-//     var masters = elsByCls(id+"_m");
-//     var bb;
-//     for(bb=0; masters.length>bb; bb++){
-//         if (masters[bb].checked){
-//             return true;
-//         }
-//     }
-//     return false;
-// }
-// function modifyMany( arrayOrElement, clazz, isAdd){
-//     if( Array.isArray(arrayOrElement)){
-// 	var aa;
-// 	for(aa=arrayOrElement.length-1; aa>=0; aa--){
-// 	    modifyClassHelper(arrayOrElement[aa], clazz, isAdd);
-// 	}
-//     }
-//     else{
-// 	modifyClassHelper(arrayOrElement, clazz, isAdd);
-//     }
-// }
 
 /**
  * Handles when the checkbox infront of an objective or optional
@@ -719,25 +721,6 @@ function modifyClass( el, clazz, isAdd ){
 
 
 
-// /* 
-//  * This design does not account for cascading dependent components .
-//  * There are none currently, so this limitation is acceptable.
-//  */
-// function updateDependency(ids){
-//     var aa, bb;
-
-//     // Run through all 
-//     for(aa=0; ids.length>aa; aa++){     
-//         var enabled = areAnyMastersSelected(ids[aa]);
-//         // We might need to recur on these if the selection-based
-//         // requirement had a dependent selection-based requirement.
-//         modifyClass( elById(ids[aa]), DISABLED, !enabled);
-//         var sn_s = elsByCls(ids[aa]);
-//         for(bb=0; sn_s.length>bb; bb++){
-//             modifyClass(sn_s[bb], DISABLED, !enabled)
-//         }
-//     }
-// }
 
 var sched;
 function update(el){
@@ -774,9 +757,6 @@ function handleSelections(){
     var selIds = [];
     for (sel in effSelMap){
 	selIds.push([effSelMapOwner[sel],sel]);
-	
-
-
     }
     while(selIds.length>0){
 	var tuple  = selIds.pop();
@@ -848,7 +828,7 @@ function isApplied(el){
     // ---
     // Need to clean up this function
     // --
-    while(el.classList.contains("component")){
+    while(!el.classList.contains("component")){
 	if(el==document.root) return false;
 	el = el.parent;
     }
