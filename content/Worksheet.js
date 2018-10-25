@@ -993,7 +993,7 @@ function handleSelectionGroupUpdate(chk){
 	if(isSomethingChecked){                                    // If something's checked
 	    if(chk==group[aa]) continue;                           // We're not doing anything to chk
 	    if(chk.checked){                                       // If we just checked
-		if( isExclusive(chk) || isExclusive(group[aa])){ // And on or the oth
+		if( isExclusive(chk) || isExclusive(group[aa])){   // And on or the oth
 		    setCheckboxState(group[aa], false);		    
 		}
 	    }
