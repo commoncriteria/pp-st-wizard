@@ -2,6 +2,7 @@
 """ 
 Module that converts PP xml documents to an HTML worksheet
 """
+from __future__ import print_function
 
 import base64
 from io import StringIO 
@@ -10,6 +11,10 @@ import sys
 import xml.etree.ElementTree as ET
 import PPObject
 
+import sys
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 class PPMap:
     """ Structure that saves modules to their associated bases """
@@ -31,7 +36,7 @@ class PPMap:
         for name in PPMap.basenameToDefs:
             map=PPMap.basenameToDefs[name]
             if map.base == None:
-                sys.err.print("Some module modifies an unknown base: "+name)
+                eprint("Some module modifies an unknown base: "+name)
                 del PPMap.basenameToDefs[name]
                 continue
             base=PPMap.basenameToDefs[name].base
@@ -70,7 +75,7 @@ class PPMap:
         for name in sorted(PPMap.basenameToDefs):
             map=PPMap.basenameToDefs[name]
             if map.base == None:
-                sys.err.print("Some module modifies an unknown base: "+name)
+                eprint("Some module modifies an unknown base: "+name)
                 del PPMap.basenameToDefs[name]
                 continue
             id=PPObject.to_id(name)
@@ -121,7 +126,7 @@ class PPMap:
         for name in sorted(PPMap.modnameToDef):
             mod=PPMap.modnameToDef[name]
             id=PPObject.to_id(name)
-            out.write("<div class='hidable dep:"+id + "'>");
+            out.write("<div class='hidable dep:"+id + "' id='module:"+id+"'>");
             out.write("<h3>"+mod.root.attrib["name"]+"</h3>")
             obj = mod
             out.write(obj.handle_contents(obj.root, False))
@@ -172,21 +177,29 @@ if __name__ == "__main__":
         elif root.tag == PPObject.cc("technical-decisions"): # If it's a TD
             tds[sys.argv[inIndex]]=root                      # save it for the end
 
+    #- Run through the various Technical decisions
     for tdpath in tds:
         td=tds[tdpath]
         appliedTD=False
+        wasTdFileUsed=False
         for bunch in td.findall(".//cc:bunch", PPObject.NS):
             for applies in bunch.findall("./cc:applies-to", PPObject.NS):
                 name=applies.attrib["name"]
                 maxver=float(applies.attrib["max-inclusive"])
                 if name in PPMap.basenameToDefs:
                     ppobj=PPMap.basenameToDefs[name].base
-                    if maxver >= ppobj.getVersion(): ppobj.applyBunchOfTDs(bunch)
+                    if maxver >= ppobj.getVersion():
+                        ppobj.applyBunchOfTDs(bunch)
+                        wasTdFileUsed=True
                 elif name in PPMap.modnameToDef:
-                    module=PPMap.modulenameToDef[name].applyBunchOfTDs(bunch)
+                    module=PPMap.modulenameToDef[name]
+                    if maxver >= module.getVersion():
+                        module.applyBunchOfTDs(bunch)
+                        wasTdFileUsed=True
                 else: 
                     print("Could not find PP or PP-Mod with the name: " + name +". Ignoring.");
-
+            if not wasTdFileUsed:
+                eprint("Info: TD file '"+tdpath+"' did not apply to any PPs or Modules.")
     with open(outfile, "w") as out:
         out.write(
 """<html xmlns='http://www.w3.org/1999/xhtml'>

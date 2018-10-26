@@ -41,6 +41,10 @@ function elsByCls(classname){
     return document.getElementsByClassName(classname);
 }
 
+function subElsByCls(el, classname){
+     return el.getElementsByClassName(classname);
+}
+
 /**
  * Aliases getElementById
  */
@@ -111,17 +115,6 @@ function isPrevCheckbox(elem){
     return ret;
 }
 
-
-// function retrieveBase(name){
-//     var xhttp = new XMLHttpRequest();
-//     xhttp.onreadystatechange = function() {
-//         if (this.readyState == 4 && this.status == 200) {
-// 	    pp_xml = xhttp.responseXML.documentElement
-//         }
-//     };
-//     xhttp.open("GET", name, true);
-//     xhttp.send();
-// }
 
 
 // elem is a component element
@@ -371,24 +364,52 @@ function generateReport(){
     var aa;
     report += LT+"report xmlns='https://niap-ccevs.org/cc/pp/report/v1'>"
 
-    var kids = elsByCls('requirement');
-    var isInvalid = false;
-    for(aa=0; kids.length>aa; aa++){
-        if( kids[aa].classList.contains("invalid") ){
-            isInvalid = true;
-        }
-        report += "\n"+LT+"req id='"+kids[aa].id+"'>";
-        report +=getRequirement(kids[aa]);
-        report += LT+"/req>\n";
-    }
-    report += LT+"/report>";
-    if( isInvalid ){
-        alert("Warning: You are downloading an incomplete report.");
-    }
-    var blobTheBuilder = new MyBlobBuilder();
-    blobTheBuilder.append(report);
 
-    initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
+    var baseId=getAppliedBaseId();
+    if(baseId==null) return;
+    report += harvestSection(elById("base:"+baseId));
+    var modIds = getAppliedModuleIds();
+    for(aa=0; aa<modIds.length; aa++){
+	qq("Looking for: "+ "module:"+modIds[aa]);
+	report += harvestSection(elById("module:"+modIds[aa]));
+    }
+    report += LT+"/report>"							 
+    qq(report);
+    // var blobTheBuilder = new MyBlobBuilder();
+    // blobTheBuilder.append(report);
+    // initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
+//    initiateDownload('Report.txt', blobTheBuilder.getBlob("text"));
+}
+
+function harvestSection(section){
+    var ret=LT+"section>\n";
+    ret += LT+"name>"+section.firstElementChild.innerHTML+LT+"/name>\n";
+    var aa;
+    var comps=subElsByCls(section,"component");
+    for(aa=0; aa<comps.length; aa++){
+        if(!isApplied(comps[aa])) continue;
+        ret+="<component>\n   <name>"
+        ret+=subElsByCls(comps[aa], "f-comp-title")[0].innerHTML;
+        ret+="</name>\n";
+        var reqs = subElsByCls(comps[aa], "requirement");
+	ret+=harvestReqs(reqs)
+        ret+="</component>";
+    }
+    ret += LT+"/section>\n"
+    return ret;
+}
+function harvestReqs(reqs){
+    var ret="";
+    var aa;
+    for(aa=0; aa<reqs.length; aa++){
+      ret+="<requirement>\n   <name>";
+      var title = subElsByCls(reqs[aa], "f-el-title");
+      ret+=title[0].innerHTML;
+      ret+="</name>\n"
+      ret+=getRequirement(reqs[aa]);
+      ret+="\n"
+    }
+    return ret;
 }
 
 function getRequirements(nodes){
@@ -466,13 +487,15 @@ function getRequirement(node){
             ret += LT+"/management-function-table>";
         }
         else{
-            ret+=getRequirements(node.children);
+            ret+=getRequirements(node.childNodes);
         }
     }
     // If it's text
     else if(node.nodeType==3){
-        return node.textContent;
+     	ret = node.textContent;
+        return ret;
     }
+    else{}							   
     return ret;
 }
 
@@ -588,7 +611,33 @@ function moduleChange(){
     var aa;
 
     // Figure out what to show
-    for(aa=modchecks.length-1; aa>=0; aa--){
+    for(aa=modchecks.length-1; aa>=0; aa--){// function addNote(parent, classname, notemsg){
+//     var noteparent = parent.getElementsByClassName("comp-notes");
+//     noteparent[0].appendChild(note);
+// }
+
+// function areAnyMastersSelected(id){
+//     var masters = elsByCls(id+"_m");
+//     var bb;
+//     for(bb=0; masters.length>bb; bb++){
+//         if (masters[bb].checked){
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+// function modifyMany( arrayOrElement, clazz, isAdd){
+//     if( Array.isArray(arrayOrElement)){
+// 	var aa;
+// 	for(aa=arrayOrElement.length-1; aa>=0; aa--){
+// 	    modifyClassHelper(arrayOrElement[aa], clazz, isAdd);
+// 	}
+//     }
+//     else{
+// 	modifyClassHelper(arrayOrElement, clazz, isAdd);
+//     }
+// }
+
 	if(isVisible(modchecks[aa]) &&  
 	   modchecks[aa].checked){
 	    var modId = modchecks[aa].id.split(":")[1];
@@ -620,6 +669,7 @@ function moduleChange(){
     // Build a new one
     var baseId=getAppliedBaseId();
     if(baseId==null) return;
+    // selMap is generated dynamically
     var baseMap=selMap[baseId]
     addEffectiveSelectionIds(selMap[baseId], baseId, true);
     var modIds = getAppliedModuleIds();
@@ -672,32 +722,6 @@ function applyModifyingGroup(parent, modname){
     }
 }
 
-// function addNote(parent, classname, notemsg){
-//     var noteparent = parent.getElementsByClassName("comp-notes");
-//     noteparent[0].appendChild(note);
-// }
-
-// function areAnyMastersSelected(id){
-//     var masters = elsByCls(id+"_m");
-//     var bb;
-//     for(bb=0; masters.length>bb; bb++){
-//         if (masters[bb].checked){
-//             return true;
-//         }
-//     }
-//     return false;
-// }
-// function modifyMany( arrayOrElement, clazz, isAdd){
-//     if( Array.isArray(arrayOrElement)){
-// 	var aa;
-// 	for(aa=arrayOrElement.length-1; aa>=0; aa--){
-// 	    modifyClassHelper(arrayOrElement[aa], clazz, isAdd);
-// 	}
-//     }
-//     else{
-// 	modifyClassHelper(arrayOrElement, clazz, isAdd);
-//     }
-// }
 
 /**
  * Handles when the checkbox infront of an objective or optional
@@ -719,25 +743,6 @@ function modifyClass( el, clazz, isAdd ){
 
 
 
-// /* 
-//  * This design does not account for cascading dependent components .
-//  * There are none currently, so this limitation is acceptable.
-//  */
-// function updateDependency(ids){
-//     var aa, bb;
-
-//     // Run through all 
-//     for(aa=0; ids.length>aa; aa++){     
-//         var enabled = areAnyMastersSelected(ids[aa]);
-//         // We might need to recur on these if the selection-based
-//         // requirement had a dependent selection-based requirement.
-//         modifyClass( elById(ids[aa]), DISABLED, !enabled);
-//         var sn_s = elsByCls(ids[aa]);
-//         for(bb=0; sn_s.length>bb; bb++){
-//             modifyClass(sn_s[bb], DISABLED, !enabled)
-//         }
-//     }
-// }
 
 var sched;
 function update(el){
@@ -774,9 +779,6 @@ function handleSelections(){
     var selIds = [];
     for (sel in effSelMap){
 	selIds.push([effSelMapOwner[sel],sel]);
-	
-
-
     }
     while(selIds.length>0){
 	var tuple  = selIds.pop();
@@ -789,12 +791,9 @@ function handleSelections(){
 	// If it's not active, nothing to do
 	if (!isApplied(chkbx)) continue;
 	var localMap =selMap[ppowner] ;
-	qq("Looked for " + ppowner+":"+selId);
 	var compIds = localMap[selId];
 	for(compId in compIds){
-	    qq("Adding : " + compId);
 	    var newSels = enableDominantComponent(compId);
-	    qq("Size is : "+newSels.length);
 	    for(sel in newSels){
 		if (sel.id){
 		    selIds.push(sel.split(":"));
@@ -848,9 +847,12 @@ function isApplied(el){
     // ---
     // Need to clean up this function
     // --
-    while(el.classList.contains("component")){
-	if(el==document.root) return false;
-	el = el.parent;
+    while(true){
+        if(el.classList.contains("component")){
+           break;
+        }
+	if('HTML'==el.tagName) return false;
+	el = el.parentElement;
     }
     // If the component isn't visible
     if(!isVisible(el)) return false;
@@ -1062,7 +1064,7 @@ function handleSelectionGroupUpdate(chk){
 	if(isSomethingChecked){                                    // If something's checked
 	    if(chk==group[aa]) continue;                           // We're not doing anything to chk
 	    if(chk.checked){                                       // If we just checked
-		if( isExclusive(chk) || isExclusive(group[aa])){ // And on or the oth
+		if( isExclusive(chk) || isExclusive(group[aa])){   // And on or the oth
 		    setCheckboxState(group[aa], false);		    
 		}
 	    }
@@ -1143,7 +1145,3 @@ MyBlobBuilder.prototype.getBlob = function(mimetype) {
   }
   return this.blob;
 };
-
-
-
-
