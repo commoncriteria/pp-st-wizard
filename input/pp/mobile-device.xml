@@ -2,6 +2,9 @@
 <?xsl-stylesheet type="text/xsl" href="../transforms/pp2html.xsl"?>
 
 <?xml-model href="../transforms/schemas/CCProtectionProfile.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!-- TODO: <selectables onlyone="yes"> for all selections where only one item can be selected
+<selectable id= " "/> and selection depends ids for the selectable SFRs -->
+
 <PP xmlns="https://niap-ccevs.org/cc/v1" name="Mobile Device Fundamentals"
   xmlns:htm="http://www.w3.org/1999/xhtml">
   <PPReference title="PP Reference" id="XXXXX">
@@ -2183,7 +2186,7 @@ This section also describes the secure key storage services to be provided by th
             <aactivity>The evaluator shall review the  <abbr linkend="TSS"/> to determine that the  <abbr linkend="TSS"/> includes key hierarchy description of the protection of each <abbr linkend="DEK"/> for data-at-rest, of software-based key storage, of long-term trusted channel keys, and of <abbr linkend="KEK"/> related to the protection of the <abbr linkend="DEK"/>s, long-term trusted channel keys, and software-based key storage. This description must include a diagram illustrating the key hierarchy implemented by the <abbr linkend="TOE"/> in order to demonstrate that the implementation meets <linkref linkend="FCS_STG_EXT.2"/>. The description shall indicate how the functionality described by <linkref linkend="FCS_RBG_EXT.1"/> is invoked to generate <abbr linkend="DEK"/>s (<linkref linkend="FCS_CKM_EXT.2"/>), the key size (<linkref linkend="FCS_CKM_EXT.2"/> and <linkref linkend="FCS_CKM_EXT.3"/>) for each key, how each <abbr linkend="KEK"/> is formed (generated, derived, or combined according to <linkref linkend="FCS_CKM_EXT.3"/>), the integrity protection method for each encrypted key (<linkref linkend="FCS_STG_EXT.3"/>), and the IV generation for each key encrypted by the same <abbr linkend="KEK"/> (<linkref linkend="FCS_IV_EXT.1"/>). More detail for each task follows the corresponding requirement. 
             </aactivity>
           </f-element>
-          <f-element id="fcs_stg_ext.2.2 ">
+          <f-element id="fcs_stg_ext.2.2">
             <title><abbr linkend="DEK"/>s, <abbr linkend="KEK"/>s, <assignable>any long-term trusted channel key material</assignable> and
               <selectables><selectable>all software-based key storage</selectable><selectable exclusive="yes">no other keys</selectable></selectables> shall be encrypted using one of the following methods: 
               <selectables><selectable>using a SP800-56B key establishment scheme</selectable>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<technical-decisions  xmlns:h="http://www.w3.org/1999/xhtml" 
+		      xmlns="https://niap-ccevs.org/cc/v1">
+  <bunch>
+    <!-- 
+	 Selections with IDs *MUST* have the same IDs as those in the original PP.
+    -->
+    <applies-to max-inclusive="3.1" name="Mobile Device Fundamentals"/>
+    <decision id='369' date="2018.10.17"
+	      url="https://www.niap-ccevs.org/Documents_and_Guidance/view_td.cfm?td_id=379"
+	      >
+      <notes> LTTCKM includes WPA2 PSK keys in addition to IPsec and Bluetooth keys</notes>
+
+          <f-element id="fcs_stg_ext.2.2">
+            <title><abbr linkend="DEK"/>s, <abbr linkend="KEK"/>s, <assignable>any long-term trusted channel key material</assignable> and
+              <selectables><selectable>all software-based key storage</selectable><selectable>no other keys</selectable></selectables> shall be encrypted using one of the following methods: 
+              <selectables><selectable>using a SP800-56B key establishment scheme</selectable>
+                <selectable>using AES in the 
+                <selectables>
+                  <selectable>Key Wrap (KW) mode</selectable><selectable>Key Wrap with Padding (KWP) mode</selectable><selectable>GCM</selectable><selectable>CCM</selectable><selectable>CBC mode</selectable>
+                </selectables></selectable></selectables>
+                . </title>
+            <note role="application">The <abbr linkend="ST"/> author selects which key encryption schemes are used by the <abbr linkend="TOE"/>. This requirement refers only to <abbr linkend="KEK"/>s as defined this <abbr linkend="PP"/> and does not refer to those <abbr linkend="KEK"/>s specified in other standards. The ST author must assign the same Long-term trusted channel key material assigned in FCS_STG_EXT.2.1.</note>
+            <aactivity><TSS/>The evaluator shall examine the key hierarchy description in the  <abbr linkend="TSS"/> section to verify that each <abbr linkend="DEK"/> and software-stored key is encrypted according to <linkref linkend="FCS_STG_EXT.2"/>.</aactivity>
+          </f-element>
+
+          <f-element id="fcs_stg_ext.2.1">
+            <title>The <abbr linkend="TSF"/> shall encrypt all <abbr linkend="DEK"/>s, <abbr linkend="KEK"/>s, 
+              <assignable>any long-term trusted channel key material</assignable> and 
+              <selectables><selectable>all software-based key storage</selectable><selectable>no other keys</selectable></selectables> by <abbr linkend="KEK"/>s that are 
+              <selectables linebreak="yes">                
+                <selectable>Protected by the <abbr linkend="REK"/> with 
+                  <selectables linebreak="yes">
+                    <selectable>encryption by a <abbr linkend="REK"/></selectable>
+                    <selectable>encryption by a <abbr linkend="KEK"/> chaining from a <abbr linkend="REK"/></selectable>
+                    <selectable>encryption by a <abbr linkend="KEK"/> that is derived from a <abbr linkend="REK"/></selectable></selectables>
+                 </selectable>
+                <selectable>Protected by the <abbr linkend="REK"/> and the password with 
+                  <selectables linebreak="yes">
+                    <selectable>encryption by a <abbr linkend="REK"/> and the password-derived <abbr linkend="KEK"/></selectable>
+                    <selectable>encryption by a <abbr linkend="KEK"/> chaining to a <abbr linkend="REK"/> and the password-derived or biometric-unlocked <abbr linkend="KEK"/></selectable>
+                    <selectable>encryption by a <abbr linkend="KEK"/> that is derived from a <abbr linkend="REK"/> and the password-derived or biometric-unlocked <abbr linkend="KEK"/></selectable>
+                  </selectables>
+              </selectable></selectables>.
+            </title>
+            <note role="application">The <abbr linkend="ST"/> author must select “all software-based key storage” if “software-based” is selected in <linkref linkend="FCS_STG_EXT.1.1"/>. If the <abbr linkend="ST"/> author selects “mutable hardware” in <linkref linkend="FCS_STG_EXT.1.1"/>, the secure key storage is not subject to this requirement. 
+             <abbr linkend="REK"/>s are not subject to this requirement. 
+              <h:br/><h:br/>
+              A <abbr linkend="REK"/> and the password-derived <abbr linkend="KEK"/> may be combined to form a combined <abbr linkend="KEK"/> (as described in <linkref linkend="FCS_CKM_EXT.3"/>) in order to meet this requirement.
+              <h:br/><h:br/>
+              Sensitive data is protected by the <abbr linkend="REK"/> and the password or biometric. Sensitive data includes some or all user or enterprise data. Software-based key storage itself shall be considered sensitive data and be protected accordingly, i.e. by the password or biometric and <abbr linkend="REK"/>.
+
+              <h:br></h:br><h:br></h:br>
+              All keys must ultimately be protected by a <abbr linkend="REK"/>. Sensitive data must be protected by the password or biometric (selection 2). In particular, <figref refid="Keys"/> has <abbr linkend="KEK"/>s protected according to these requirements: DEK_1 meets 2a and would be appropriate for sensitive data, DEK_2 meets 1b and would not be appropriate for sensitive data, K_1 meets 1a and is not considered a sensitive key, and K_2 meets 2b and is considered a sensitive key.
+              <h:br></h:br><h:br></h:br>
+
+              Long-term trusted channel key material includes WPA2(PSKs), IPsec(PSKs and client certificates) and Bluetooth keys. These keys shall not be protected by the password, as they may be necessary in the locked state. For clarity, the ST author <h:b>must</h:b> assign any Long-term trusted channel key material supported by the TOE.  At a minimum, a TOE must support at least WPA2 and Bluetooth keys
+              <h:br/><h:br/>
+              The documentation of the product's encryption key management should be detailed enough that, after reading, the evaluator will thoroughly understand the product's key management and how it meets the requirements to ensure the keys are adequately protected. This documentation should include an essay and diagram(s). This documentation is not required to be part of the  <abbr linkend="TSS"/> - it can be submitted as a separate document and marked as developer proprietary.
+            </note>
+            <aactivity>
+	      <TSS/>
+	      The evaluator shall review the  <abbr linkend="TSS"/> to determine that the  <abbr linkend="TSS"/> includes key hierarchy description of the protection of each <abbr linkend="DEK"/> for data-at-rest, of software-based key storage, of long-term trusted channel keys, and of <abbr linkend="KEK"/> related to the protection of the <abbr linkend="DEK"/>s, long-term trusted channel keys, and software-based key storage. This description must include a diagram illustrating the key hierarchy implemented by the <abbr linkend="TOE"/> in order to demonstrate that the implementation meets <linkref linkend="FCS_STG_EXT.2"/>. The description shall indicate how the functionality described by <linkref linkend="FCS_RBG_EXT.1"/> is invoked to generate <abbr linkend="DEK"/>s (<linkref linkend="FCS_CKM_EXT.2"/>), the key size (<linkref linkend="FCS_CKM_EXT.2"/> and <linkref linkend="FCS_CKM_EXT.3"/>) for each key, how each <abbr linkend="KEK"/> is formed (generated, derived, or combined according to <linkref linkend="FCS_CKM_EXT.3"/>), the integrity protection method for each encrypted key (<linkref linkend="FCS_STG_EXT.3"/>), and the IV generation for each key encrypted by the same <abbr linkend="KEK"/> (<linkref linkend="FCS_IV_EXT.1"/>). More detail for each task follows the corresponding requirement. 
+            </aactivity>
+          </f-element>
+
+           <f-element id="fcs_stg_ext.3.1">            
+            <title>The <abbr linkend="TSF"/> shall protect the integrity of any encrypted <abbr linkend="DEK"/>s and <abbr linkend="KEK"/>s and 
+              <selectables><selectable>long-term trusted channel key material</selectable><selectable>all software-based key storage</selectable><selectable>no other keys</selectable></selectables> 
+                by 
+              <selectables linebreak="yes">
+                <selectable>
+                  <selectables><selectable>GCM</selectable><selectable>CCM</selectable><selectable>Key Wrap</selectable><selectable>Key Wrap with Padding</selectable></selectables> cipher mode for encryption according to <linkref linkend="FCS_STG_EXT.2"/></selectable>
+                    <selectable>a hash (<linkref linkend="FCS_COP.1(2)"/>) of the stored key that is encrypted by a key protected by <linkref linkend="FCS_STG_EXT.2"/></selectable>
+                    <selectable>a keyed hash (<linkref linkend="FCS_COP.1(4)"/>) using a key protected by a key protected by <linkref linkend="FCS_STG_EXT.2"/></selectable>
+                    <selectable>a digital signature of the stored key using an asymmetric key protected according to <linkref linkend="FCS_STG_EXT.2"/></selectable>
+                <selectable>an immediate application of the key for decrypting the protected data followed by a successful verification of the decrypted data with previously known information</selectable>
+              </selectables>.
+            </title>
+	    <note role="application">The <abbr linkend="ST"/> must assign the same Long-term trusted channel key material assigned in FCS_STG_EXT.2.1.</note>
+          </f-element>
+
+    </decision>
+  </bunch>
+</technical-decisions>
