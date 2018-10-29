@@ -1,4 +1,5 @@
-const PREAMBLE = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title></title><style type='text/css>\n"
+const PREAMBLE = //"<html><head><title></title></head><body>";
+ "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>Security Target</title><style type='text/css'>\n"
     + ".selection,.assignment{ font-weight:bold;}\n"
     + ".reqid{  float:left;\n"
     + "   font-size:90%;\n"
@@ -14,6 +15,7 @@ const PREAMBLE = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title></titl
     + "    margin-left:20%;\n"
     + "}\n"
     + "</style></head><body>\n";
+    
 const EPILOGUE="</body></html>";
 const HIDE="none";
 const SHOW="block";
@@ -266,66 +268,8 @@ function resolver(pre){
     else return "http://www.w3.org/1999/xhtml";
 }
 
-function fullReport(){
-    var pp_xml = new DOMParser().parseFromString(atob(ORIG64), "text/xml");
-    //- Fix up selections
-    var xsels = pp_xml.evaluate("//cc:selectable", pp_xml, resolver, XPathResult.ANY_TYPE, null);
-    var hsels = elsByCls('selbox');
-    var hsindex = 0;
-    var choosens = new Set();
-    while(true){
-        var xmlsel = xsels.iterateNext();
-        if( xmlsel == null ) break;
-        if( hsindex == hsels.length) break;
-        if( hsels[hsindex].checked ){
-            // Can't mutate it while iterating
-            // Keep a set
-            //xmlsel.setAttribute("selected", "yes");
-            choosens.add(xmlsel);
-        }
-        hsindex++;
-    }
-    for(let choosen of choosens){
-        choosen.setAttribute("selected", "yes");
-    }
-    var ctr=0;
-
-    //- Fix up assignments
-    var xassigns = pp_xml.evaluate("//cc:assignable", pp_xml, resolver, XPathResult.ANY_TYPE, null)
-    var assignments = [];
-    while(true){
-        var xassign = xassigns.iterateNext();
-        if(xassign == null) break;
-        assignments[ctr] = xassign;
-        ctr++;
-    }
-    var hassigns = elsByCls('assignment');
-    for(ctr = 0; hassigns.length>ctr; ctr++){
-        if(hassigns[ctr].value){
-            assignments[ctr].setAttribute("val", hassigns[ctr].value);
-        }
-    }
-
-    //- Fix up components
-    var xcomps = pp_xml.evaluate("//cc:f-component|//cc:a-component", pp_xml, resolver, XPathResult.ANY_TYPE, null);
-    var hcomps = elsByCls('component');
-    var disableds = new Set();
-    for(ctr=0; hcomps.length>ctr; ctr++){
-        var xcomp = xcomps.iterateNext();
-        if(xcomp==null) break;
-        if( hcomps[ctr].classList.contains(DISABLED) ){
-            disableds.add(xcomp);
-        }
-    }
-    for(let disabled of disableds){
-        disabled.setAttribute(DISABLED, "yes");
-    }
-    logit(pp_xml);
-
-    
+function handleHtmlReport(){
     var xsl = new DOMParser().parseFromString(atob(XSL64), "text/xml");
-
-
     // This doesn't work on Chrome. THe max string size cuts us off.
     // var serializer = new XMLSerializer();
     // var xmlString = serializer.serializeToString(pp_xml);
@@ -344,27 +288,36 @@ function fullReport(){
     // This way seems to work with Chrome and Mozilla.
     // A little more complicated than it should be b/c
     // Chrome has a max string size.
+    var report = generateReport();
+    var pp_xml = new DOMParser().parseFromString(report, "text/xml");
     var htmlReport = transform(xsl, pp_xml, document);
+    qq(htmlReport);
+
+
     var rNode = elById('report-node');
     // Clear its children
     while(rNode.firstChild){
 	rNode.removeChild( rNode.firstChild );
     }
     rNode.appendChild( htmlReport );
-    var myBlobBuilder = new MyBlobBuilder();
-    myBlobBuilder.append(PREAMBLE);
-    myBlobBuilder.append(rNode.innerHTML);
-    myBlobBuilder.append(EPILOGUE);
-    initiateDownload('FullReport.html', myBlobBuilder.getBlob("text/html"));
+    var blobTheBuilder = new MyBlobBuilder();
+    blobTheBuilder.append(PREAMBLE);
+    blobTheBuilder.append(rNode.innerHTML);
+    blobTheBuilder.append(EPILOGUE);
+    initiateDownload('FullReport.html', blobTheBuilder.getBlob("text/html"));
 }
 
+function handleXmlReport(){
+    var report = generateReport();// qq(report);
+    var blobTheBuilder = new MyBlobBuilder();
+    blobTheBuilder.append(report);
+    initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
+}
 
 function generateReport(){
     var report = LT+"?xml version='1.0' encoding='utf-8'?>\n"
     var aa;
     report += LT+"report xmlns='https://niap-ccevs.org/cc/pp/report/v1'>"
-
-
     var baseId=getAppliedBaseId();
     if(baseId==null) return;
     report += harvestSection(elById("base:"+baseId));
@@ -374,11 +327,7 @@ function generateReport(){
 	report += harvestSection(elById("module:"+modIds[aa]));
     }
     report += LT+"/report>"							 
-    // qq(report);
-    var blobTheBuilder = new MyBlobBuilder();
-    blobTheBuilder.append(report);
-    initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
-//    initiateDownload('Report.txt', blobTheBuilder.getBlob("text"));
+    return report;
 }
 
 function harvestSection(section){
@@ -407,7 +356,11 @@ function harvestReqs(reqs){
 	ret+=title[0].innerHTML;
 	ret+="</name>\n"
 	// Get the requirement and replace all extra spaces 
-	ret+=getRequirement(reqs[aa]).replace(/\s+(?= )/g,'');
+	var wordsEl=subElsByCls(reqs[aa], "words")[0];
+	var words=getRequirement(wordsEl);
+	words = words.replace(/(\r\n\t|\n|\r\t)/gm," ");
+	words = words.replace(/\s+(?= )/g,'');
+	ret+=words;
 	ret+="</requirement>\n"
     }
     return ret;
@@ -1101,7 +1054,7 @@ function delayedUpdate(){
     sched = undefined;
 }
 
-function transform(xsl, xml, owner){
+function transform(xsl, xml){
     // code for IE
     if (window.ActiveXObject ){
         return xml.transformNode(xsl);
@@ -1110,7 +1063,7 @@ function transform(xsl, xml, owner){
     else if (document.implementation && document.implementation.createDocument){
         var xsltProcessor = new XSLTProcessor();
 	xsltProcessor.importStylesheet(xsl);
-        return xsltProcessor.transformToFragment(xml, owner);
+        return xsltProcessor.transformToFragment(xml, document);
     }
 }
 

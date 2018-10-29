@@ -405,13 +405,6 @@
           </f-component>
 	</subsection>
 	
-<!--
-    We cannot handle this case as of yet:
-    The selection of an selectable that overrides
-    a base selectable, is not seen as having a dependent.
-    The case below should bring in FCS_COP.1(1) in application software PP.
--->
-
 	<subsection title="Cryptographic Support (FCS)" id="fcs">
         <f-component id="fcs_sto_ext.1" name="Storage of Credentials">
 	  <consistency-rationale>Blahblahblah</consistency-rationale>
@@ -431,7 +424,7 @@
 	    </note>
             <aactivity>
 	      <TSS/>
-	      Do somethingl
+	      Do something.
             </aactivity>
           </f-element>
         </f-component>

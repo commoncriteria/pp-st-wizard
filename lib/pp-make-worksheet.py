@@ -215,7 +215,7 @@ if __name__ == "__main__":
 
 
         # out.write(" const ORIG64='"+inb64+"';\n")
-        # out.write(" const XSL64='"+xslb64+"';\n")
+        out.write(" const XSL64='"+xslb64+"';\n")
         out.write(js)
         out.write("\n")
         out.write(PPMap.make_js_selmap())
@@ -247,8 +247,8 @@ if __name__ == "__main__":
         for base in PPMap.basenameToDefs:
             out.write("dep:"+PPObject.to_id(base)+" ")
         out.write( """'>
-         <button type="button" onclick="generateReport()">XML Record</button>
-         <button type="button" onclick="fullReport()">HTML Report</button>
+         <button type="button" onclick="handleXmlReport()">XML Report</button>
+         <button type="button" onclick="handleHtmlReport()">HTML Report</button>
        </div>
        </div>
        <div id='report-node' style="display: none;"/>

@@ -85,7 +85,7 @@ function findDirectory() {
 }
 DIR=$(findDirectory $0)/..
 
-python3 $DIR/lib/pp-make-worksheet.py $DIR/content/Worksheet.js $DIR/content/Worksheet.css $DIR/content/ResultsToSt.xsl "$@"
+python3 $DIR/lib/pp-make-worksheet.py $DIR/content/Worksheet.js $DIR/content/Worksheet.css $DIR/content/ResultsToHtml.xsl "$@"
 
 exit 0
  #############################################################
