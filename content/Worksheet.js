@@ -374,10 +374,10 @@ function generateReport(){
 	report += harvestSection(elById("module:"+modIds[aa]));
     }
     report += LT+"/report>"							 
-    qq(report);
-    // var blobTheBuilder = new MyBlobBuilder();
-    // blobTheBuilder.append(report);
-    // initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
+    // qq(report);
+    var blobTheBuilder = new MyBlobBuilder();
+    blobTheBuilder.append(report);
+    initiateDownload('Report.xml', blobTheBuilder.getBlob("text/xml"));
 //    initiateDownload('Report.txt', blobTheBuilder.getBlob("text"));
 }
 
@@ -402,12 +402,13 @@ function harvestReqs(reqs){
     var ret="";
     var aa;
     for(aa=0; aa<reqs.length; aa++){
-      ret+="<requirement>\n   <name>";
-      var title = subElsByCls(reqs[aa], "f-el-title");
-      ret+=title[0].innerHTML;
-      ret+="</name>\n"
-      ret+=getRequirement(reqs[aa]);
-      ret+="\n"
+	ret+="<requirement>\n   <name>";
+	var title = subElsByCls(reqs[aa], "f-el-title");
+	ret+=title[0].innerHTML;
+	ret+="</name>\n"
+	// Get the requirement and replace all extra spaces 
+	ret+=getRequirement(reqs[aa]).replace(/\s+(?= )/g,'');
+	ret+="</requirement>\n"
     }
     return ret;
 }
