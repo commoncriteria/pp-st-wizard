@@ -43,7 +43,7 @@
    <xsl:otherwise><xsl:for-each select="cc:selectable"><i><xsl:apply-templates/></i><xsl:call-template name="commaifnotlast"/></xsl:for-each></xsl:otherwise>
   </xsl:choose></span>]</xsl:template>
 
-  <xsl:template match="cc:assignable">[<span class="assignment"><xsl:value-of select="@val"/></span>]</xsl:template>
+  <xsl:template match="cc:assignment">[<span class="assignment"><xsl:apply-templates/></span>]</xsl:template>
 
 
 
