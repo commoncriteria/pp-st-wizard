@@ -89,7 +89,9 @@ function isCheckbox(elem){
     return elem.getAttribute("type") == "checkbox";
 }
 
-
+function isSelector(elem){
+    return elem.tagName == 'SELECT';
+}
 /**
  * This runs some sort of function on
  * all elements of a class.
@@ -323,7 +325,6 @@ function generateReport(){
     report += harvestSection(elById("base:"+baseId));
     var modIds = getAppliedModuleIds();
     for(aa=0; aa<modIds.length; aa++){
-	qq("Looking for: "+ "module:"+modIds[aa]);
 	report += harvestSection(elById("module:"+modIds[aa]));
     }
     report += LT+"/report>"							 
@@ -419,27 +420,21 @@ function getRequirement(node){
         else if(node.classList.contains('mfun-table')){
             ret += LT+"management-function-table>"
             var rows = node.getElementsByTagName("tr");
-            // Skip first row
-            for(var row=1; rows.length>row; row++){
-                ret += LT+"management-function>";
-                var cols=rows[row].getElementsByTagName("td");
-                for( var col=1; cols.length>col; col++){
+            for(var row=0; rows.length>row; row++){
+                ret += LT+"row>";
+                var cols=rows[row].children;
+                for( var col=0; cols.length>col; col++){
                     ret += LT+"val>"; 
-                    if( cols[col].children.length == 0 ){
-                        ret += cols[col].textContent;
-                    }
-                    else{
-                        var si = cols[col].children[0].selectedIndex;
-                        if(si!=-1){
-                            ret += cols[col].children[0].children[si].textContent;
-                        }
-                    }
+		    ret += getRequirements(cols[col].childNodes);
                     ret += LT+"/val>";
                 }
-                ret += LT+"/management-function>\n";
+                ret += LT+"/row>\n";
             }
             ret += LT+"/management-function-table>";
         }
+	else if(isSelector(node)){
+	    ret+=getRequirement(node.children[node.selectedIndex]);
+	}
         else{
             ret+=getRequirements(node.childNodes);
         }

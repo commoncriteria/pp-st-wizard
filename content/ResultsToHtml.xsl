@@ -50,7 +50,7 @@
 
 <!-- THESE ARE BORROWED FROM OTHER XSL -->
 
-  <xsl:template match="cc:management-function-set"><table class="mfs" style="width: 100%;"><tr class="header"><td>Management Function</td><xsl:apply-templates select="./cc:manager"/></tr><xsl:apply-templates select="./cc:management-function"/></table></xsl:template>
+  <xsl:template match="cc:management-function-table"><table class="mfs" style="width: 100%;"><tr class="header"><td>Management Function</td><xsl:apply-templates select="./cc:manager"/></tr><xsl:apply-templates select="./cc:management-function"/></table></xsl:template>
   
   
   <xsl:template match="cc:manager"><td> <xsl:apply-templates/> </td></xsl:template>

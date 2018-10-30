@@ -171,6 +171,7 @@ div{
     .hide.component .words{
         display: none;
     } 
+
     
     .component .f-comp-title::after{
         display: inline-block;
