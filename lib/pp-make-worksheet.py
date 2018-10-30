@@ -247,8 +247,12 @@ if __name__ == "__main__":
         for base in PPMap.basenameToDefs:
             out.write("dep:"+PPObject.to_id(base)+" ")
         out.write( """'>
-         <button type="button" onclick="handleXmlReport()">XML Report</button>
-         <button type="button" onclick="handleHtmlReport()">HTML Report</button>
+
+        <hr/>
+        Download Report: 
+        <span onclick='handleXmlReport()' class="download file-icon file-icon-lg" data-type="xml"></span>
+        <span onclick='handleHtmlReport()'class="download file-icon file-icon-lg" data-type="html"></span></a>
+ 
        </div>
        </div>
        <div id='report-node' style="display: none;"/>

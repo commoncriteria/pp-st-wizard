@@ -54,33 +54,6 @@
   <xsl:template match="cc:row[1]/cc:val"><th><xsl:apply-templates/></th></xsl:template>
   <xsl:template match="cc:row/cc:val"><td><xsl:apply-templates/></td></xsl:template>
 
-  
-  <xsl:template match="cc:manager"><td> <xsl:apply-templates/> </td></xsl:template>
-
-  <xsl:template match="cc:management-function"><tr><td><xsl:apply-templates select="cc:text"/></td><xsl:variable name="manfunc" select="."/><xsl:for-each select="../cc:manager"><xsl:variable name="id" select="@id"/><td><xsl:choose>
-	      <!-- If we have something for that role -->
-	      <xsl:when test="$manfunc/*[@ref=$id]">
-		<xsl:choose>
-		  <!-- And it is explicit, put it in there -->
-		  <xsl:when test="$manfunc/*[@ref=$id]/node()"><xsl:apply-templates select="$manfunc/*[@ref=$id]/."/></xsl:when>
-		  <xsl:otherwise><xsl:call-template name="make-management-value">
-		    <xsl:with-param name="type">
-		      <xsl:value-of select="name($manfunc/*[@ref=$id])"/></xsl:with-param>  </xsl:call-template></xsl:otherwise>
-		</xsl:choose></xsl:when>
-	      <xsl:otherwise><xsl:call-template name="make-management-value">
-		<xsl:with-param name="type"><xsl:value-of select='../@default'/></xsl:with-param>
-		</xsl:call-template></xsl:otherwise>
-	    </xsl:choose></td></xsl:for-each></tr></xsl:template>
-
-
-  <xsl:template name="make-management-value">
-    <xsl:param name="type"/>
-    <xsl:choose>
-      <xsl:when test="$type='O'">O</xsl:when>
-      <xsl:when test="$type='M'">X</xsl:when>
-      <xsl:when test="$type='_'">-</xsl:when>
-    </xsl:choose>
-  </xsl:template>
 
   <xsl:template name="commaifnotlast"><xsl:if test="position() != last()"><xsl:text>, </xsl:text></xsl:if></xsl:template>
 

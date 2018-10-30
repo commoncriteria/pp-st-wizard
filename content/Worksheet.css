@@ -1,3 +1,75 @@
+@charset "utf-8";
+/*! fileicon.css v0.1.1 | MIT License | github.com/picturepan2/fileicon.css */
+/* fileicon.basic */
+.file-icon {
+  font-family: Arial, Tahoma, sans-serif;
+  font-weight: 300;
+  display: inline-block;
+  width: 24px;
+  height: 32px;
+  background: #018fef;
+  position: relative;
+  border-radius: 2px;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+.file-icon::before {
+  display: block;
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-bottom-left-radius: 2px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #fff #fff rgba(255,255,255,.35) rgba(255,255,255,.35);
+}
+.file-icon::after {
+  display: block;
+  /* Puts in the content of the data-type attribute*/
+  content: attr(data-type);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 10px;
+  color: #fff;
+  text-transform: lowercase;
+  width: 100%;
+  padding: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.file-icon-lg {
+  width: 48px;
+  height: 64px;
+  border-radius: 3px;
+}
+.file-icon-lg::before {
+  border-bottom-left-radius: 2px;
+  border-width: 8px;
+}
+.file-icon-lg::after {
+  font-size: 16px;
+  padding: 4px 6px;
+}
+.file-icon[data-type=xml] {
+  background: #e13d34;
+}
+.file-icon[data-type=html] {
+  background: #5eb533;
+}
+
+/* End */
+.download{
+    cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeAQMAAAAB/jzhAAAABlBMVEX///8AAABVwtN+AAAACXBI\
+WXMAAAsTAAALEwEAmpwYAAAAQ0lEQVQI12NgYGYAAvYGygjG431A4vk8IPf7PiDx/w+QqP8BJOw/\
+AAn5B0CC/wBUcQIzAwcDUFgGQvz/D1SNIOqBBACgZyRNLAmp/wAAAABJRU5ErkJggg=='), auto;
+}
+/* grab; */
+
+
 
 table tr:nth-child(2n+2){
     background-color:#F4F4F4;
