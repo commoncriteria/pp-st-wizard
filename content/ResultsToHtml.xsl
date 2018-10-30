@@ -47,11 +47,13 @@
 
 
 
-
-<!-- THESE ARE BORROWED FROM OTHER XSL -->
-
-  <xsl:template match="cc:management-function-table"><table class="mfs" style="width: 100%;"><tr class="header"><td>Management Function</td><xsl:apply-templates select="./cc:manager"/></tr><xsl:apply-templates select="./cc:management-function"/></table></xsl:template>
+  <xsl:template match="cc:management-function-table"><table class="mfs" style="width: 100%;"><xsl:apply-templates/></table></xsl:template>
   
+  <xsl:template match="cc:row"><tr><xsl:apply-templates/></tr></xsl:template>
+
+  <xsl:template match="cc:row[1]/cc:val"><th><xsl:apply-templates/></th></xsl:template>
+  <xsl:template match="cc:row/cc:val"><td><xsl:apply-templates/></td></xsl:template>
+
   
   <xsl:template match="cc:manager"><td> <xsl:apply-templates/> </td></xsl:template>
 
