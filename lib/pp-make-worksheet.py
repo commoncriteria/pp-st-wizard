@@ -248,11 +248,21 @@ if __name__ == "__main__":
             out.write("dep:"+PPObject.to_id(base)+" ")
         out.write( """'>
 
-        <hr/>
-        Download Report: 
-        <span onclick='handleXmlReport()' class="download file-icon file-icon-lg" data-type="xml"></span>
-        <span onclick='handleHtmlReport()'class="download file-icon file-icon-lg" data-type="html"></span></a>
- 
+
+
+      <table frame='box' style='box-shadow: 2px 2px;'>
+	<tr><th colspan='2'><h2>Download Security Target</h2></th></tr>
+	<tr style="background-color: white"><td colspan='2'>Formats:</td></tr>
+	<tr>
+	  <td>
+            <span onclick='handleXmlReport()' class="download file-icon file-icon-lg" data-type="xml"></span>
+	  </td>
+        <td>
+             <span onclick='handleHtmlReport()'class="download file-icon file-icon-lg" data-type="html"></span>
+        </td>
+	</tr>
+      </table>
+
        </div>
        </div>
        <div id='report-node' style="display: none;"/>

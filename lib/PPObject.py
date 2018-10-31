@@ -114,7 +114,6 @@ class PP:
         for req in td.findall(".//cc:f-element", NS):
             deadswitch=0
             id=req.attrib['id']
-            sys.stderr.write("Looking for |"+id+"|\n")
             oldel=self.root.find(".//cc:f-element[@id='"+id+"']", NS)
             if oldel==None:
                 sys.stderr.write("Failed to find '"+ id + "' in "+self.root.attrib["name"]);
