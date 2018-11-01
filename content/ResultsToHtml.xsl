@@ -16,10 +16,6 @@
  <!-- <xsl:output method="xml" encoding="UTF-8"/> -->
 
 
-  <!-- -->
-  <xsl:variable name="lower" select="'abcdefghijklmnopqrstuvwxyz'"/>
-  <xsl:variable name="upper" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
-
   <xsl:template match="/">
 	<xsl:apply-templates/>
   </xsl:template>
