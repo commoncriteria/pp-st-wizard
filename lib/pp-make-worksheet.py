@@ -231,7 +231,7 @@ if __name__ == "__main__":
       <div id='help-pane'>
         Future Help Goes Here.
       </div>
-      <img src="https://www.niap-ccevs.org/assets/images/bnr2015.home.jpg" alt="NIAP"></img>
+      <img style="margin: auto; display: block;" src="https://www.niap-ccevs.org/assets/images/bnr2015.home.jpg" alt="NIAP"></img>
       <div class="basepane">
         <h1>Security Target Worksheet"""+ teststring+"""</h1></td>
       <div class='warning-pane'>
