@@ -715,8 +715,8 @@ function update(el){
  * based on selections.
  */
 function handleSelections(){
-    var aa;
-
+    var aa, bb;
+    
     // Disable all sel-based requirements.
     forEach(elsByCls("sel-based"), function(el){
 	el.classList.add(DISABLED);
@@ -744,10 +744,11 @@ function handleSelections(){
 	var compIds = localMap[selId];
 	for(compId in compIds){
 	    var newSels = enableDominantComponent(compId);
-	    for(sel in newSels){
-		if (sel.id){
-		    selIds.push(sel.split(":"));
-		}
+	    // for(sel in newSels){
+	    for(aa=newSels.length-1; aa>=0; aa--){
+		var sel = newSels[aa];
+		qq("Adding " + sel[0] + ":" + sel[1]);
+		selIds.push(sel);
 	    }
 	}
     }
