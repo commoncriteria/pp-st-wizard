@@ -94,7 +94,7 @@ class PPMap:
             out.write(" dep:")
             out.write(PPObject.to_id(base))
         out.write("'>")
-        out.write("<h3>Select All Applicable Modules</h3>\n")
+        out.write("<h3>Select All Applicable Modules/Packages</h3>\n")
         # Run through all modules
         for name in sorted(PPMap.modnameToDef):
             mod=PPMap.modnameToDef[name]
@@ -160,6 +160,7 @@ if __name__ == "__main__":
         xslb64 = base64.b64encode(in_handle.read()).decode('ascii')
 
     # Technical Decisions
+    packages={}
     tds={}
     teststring=""
     if "test-cases" in sys.argv[5]: teststring=" (TEST PAGE)"
@@ -171,12 +172,16 @@ if __name__ == "__main__":
         
         if len( bases ) > 0:
             PPMap.add_mod(PPObject.PP(root), bases)
+        elif 'type' in root.attrib and root.attrib['type'] == "package":
+            packages[sys.argv[inIndex]]=root
         elif root.tag == PPObject.cc("PP"):
             ppmap = PPMap.get_pp_map(root.attrib["name"])    # Get any existing one
             ppmap.base= PPObject.PP(root)
         elif root.tag == PPObject.cc("technical-decisions"): # If it's a TD
             tds[sys.argv[inIndex]]=root                      # save it for the end
-
+    
+    for path in packages:
+        print("Package: "+path)
     #- Run through the various Technical decisions
     for tdpath in tds:
         td=tds[tdpath]
