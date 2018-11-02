@@ -63,10 +63,6 @@ class PPMap:
             PPMap.basenameToDefs[name]=PPMap()
         return PPMap.basenameToDefs[name]
 
-    def write_init_pp_structures(out):
-        out.write("function initPPStructures(){")
-        out.write("}")
-
     def build_worksheet(out):
         out.write("<div id='ws_base'>")
         out.write("<h3>Select the Base Protection Profile:</h3>")
@@ -117,7 +113,7 @@ class PPMap:
             map=PPMap.basenameToDefs[name]
             id=PPObject.to_id(name)
             out.write("<div class='hidable dep:"+id+"' id='base:"+id+"'>");
-            out.write("<h3>"+name+"</h3>")
+            out.write("<h2>"+name+"</h2>")
             obj = map.base
             out.write(obj.handle_contents(obj.root, False))
             out.write("</div>")
@@ -127,7 +123,7 @@ class PPMap:
             mod=PPMap.modnameToDef[name]
             id=PPObject.to_id(name)
             out.write("<div class='hidable dep:"+id + "' id='module:"+id+"'>");
-            out.write("<h3>"+mod.root.attrib["name"]+"</h3>")
+            out.write("<h2>"+mod.root.attrib["name"]+"</h2>")
             obj = mod
             out.write(obj.handle_contents(obj.root, False))
             out.write("</div>")
@@ -173,6 +169,7 @@ if __name__ == "__main__":
         if len( bases ) > 0:
             PPMap.add_mod(PPObject.PP(root), bases)
         elif 'type' in root.attrib and root.attrib['type'] == "package":
+            PPMap.add_mod(PPObject.PP(root), {});
             packages[sys.argv[inIndex]]=root
         elif root.tag == PPObject.cc("PP"):
             ppmap = PPMap.get_pp_map(root.attrib["name"])    # Get any existing one
@@ -219,12 +216,10 @@ if __name__ == "__main__":
 """)
 
 
-        # out.write(" const ORIG64='"+inb64+"';\n")
         out.write(" const XSL64='"+xslb64+"';\n")
         out.write(js)
         out.write("\n")
         out.write(PPMap.make_js_selmap())
-        PPMap.write_init_pp_structures(out)
         out.write( """
 //]]>
        </script>

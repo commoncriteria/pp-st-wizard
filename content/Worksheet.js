@@ -622,7 +622,8 @@ function moduleChange(){
     var baseMap=selMap[baseId]
     addEffectiveSelectionIds(selMap[baseId], baseId, true);
     var modIds = getAppliedModuleIds();
-    for (modId in modIds){
+    for (aa=modIds.length-1; aa>=0; aa--){
+	modId=modIds[aa];
 	addEffectiveSelectionIds(selMap[modId], modId, false);
     }
 }

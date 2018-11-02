@@ -297,7 +297,7 @@ class PP:
             idAttr=node.attrib["id"]
             ret =""
             if "SFRs" == idAttr or "SARs" == idAttr:
-                ret+="<h2>"+node.attrib["title"]+"</h2>\n"
+                ret+="<h3>"+node.attrib["title"]+"</h3>\n"
             ret += self.handle_contents(node, False)
             return ret
 
