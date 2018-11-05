@@ -148,6 +148,7 @@ class PP:
             anchor = ET.SubElement(note, u'{%s}a'%HTMNS)
             anchor.text = "#"+td.attrib['id']+ " issued on " + td.attrib['date']
             anchor.attrib['href']=td.attrib['url']
+            anchor.attrib['target']="_blank"             # Open in a new window
             anchor.tail='.'
     
     def register_parents(self, root):
