@@ -334,11 +334,19 @@ class PP:
         #     return self.handle_contents( node.find( 'cc:title', NS), True)
         elif node.tag == cc("f-component") or node.tag == cc("a-component"):
             return self.handle_component(node)
+        elif node.tag == cc("aactivity"):
+            return self.handle_aactivity(node)
         elif node.tag == cc("title"):
             return self.handle_title(node)
         else:
             return self.handle_contents(node, show_text)
         return ""
+
+    def handle_aactivity(self, node):
+        ret="<div class='aactivity'>\n"
+        ret+=self.handle_contents(node, True)
+        ret+="</div>"
+        return ret
 
     # This is where the requirements are handled
     def handle_title(self, node):
