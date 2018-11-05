@@ -19,7 +19,7 @@
   <xsl:template match="/">
 	<xsl:apply-templates/>
   </xsl:template>
-  
+
   <xsl:template match="cc:section/cc:name">
     <h1><xsl:apply-templates/></h1>
   </xsl:template>
@@ -30,6 +30,11 @@
     <h3><xsl:apply-templates/></h3>
   </xsl:template>
 
+  <xsl:template match="cc:aactivity">
+    <blockquote>
+      <xsl:apply-templates/>
+    </blockquote>
+  </xsl:template>
   <!-- -->
   <!-- Selectables template -->
   <!-- -->
@@ -41,14 +46,16 @@
 
   <xsl:template match="cc:assignment">[<span class="assignment"><xsl:apply-templates/></span>]</xsl:template>
 
-
-
+<!-- ################################# -->
+<!-- Management Function Table Start -->
+<!-- ################################# -->
   <xsl:template match="cc:management-function-table"><table class="mfs" style="width: 100%;"><xsl:apply-templates/></table></xsl:template>
   
   <xsl:template match="cc:row"><tr><xsl:apply-templates/></tr></xsl:template>
 
   <xsl:template match="cc:row[1]/cc:val"><th><xsl:apply-templates/></th></xsl:template>
   <xsl:template match="cc:row/cc:val"><td><xsl:apply-templates/></td></xsl:template>
+
 
 
   <xsl:template name="commaifnotlast"><xsl:if test="position() != last()"><xsl:text>, </xsl:text></xsl:if></xsl:template>

@@ -359,9 +359,17 @@ function harvestReqs(reqs){
 	// Get the requirement and replace all extra spaces 
 	var wordsEl=subElsByCls(reqs[aa], "words")[0];
 	var words=getRequirement(wordsEl);
+	// Convert all new lines/tabs to spaces
 	words = words.replace(/(\r\n\t|\n|\r\t)/gm," ");
+	// Remove extra spaces
 	words = words.replace(/\s+(?= )/g,'');
 	ret+=words;
+	var next = reqs[aa].nextElementSibling;
+	if(next != null && next.classList.contains("aactivity")){
+	    ret += "<aactivity>"
+		+ getRequirement(next) 
+		+ "</aactivity>";
+	}
 	ret+="</requirement>\n"
     }
     return ret;
@@ -436,17 +444,23 @@ function getRequirement(node){
 	    ret+=getRequirement(node.children[node.selectedIndex]);
 	}
         else{
+	    ret+="<"+node.tagName+">"
             ret+=getRequirements(node.childNodes);
+	    ret+="</"+node.tagName+">"
         }
     }
     // If it's text
     else if(node.nodeType==3){
      	ret = node.textContent;
-        return ret;
+        return escapeXml(ret);
     }
     else{}							   
     return ret;
 }
+
+
+
+
 
 function initiateDownload(filename, blob) {
 //    var blob = new Blob([data], {type: mimetype});
@@ -1063,6 +1077,23 @@ function transform(xsl, xml){
         return xsltProcessor.transformToFragment(xml, document);
     }
 }
+// ##################################################
+// # https://stackoverflow.com/questions/\
+// # 7918868/how-to-escape-xml-entities-in-javascript
+// # Thanks jordancpaul
+// ##################################################
+var escapeXml = (function() {
+        var doc = document.implementation.createDocument("", "", null)
+        var el = doc.createElement("temp");
+        el.textContent = "temp";
+        el = el.firstChild;
+        var ser =  new XMLSerializer();
+        return function(text) {
+            el.nodeValue = text;
+            return ser.serializeToString(el);
+        };
+    })();
+
 
 // ##################################################
 // #          Logging things
