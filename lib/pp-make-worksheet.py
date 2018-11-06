@@ -78,7 +78,7 @@ class PPMap:
             # THis will break if modules have a double quote in their name
             # Probably no risk of that.
             out.write("<input type='checkbox' class='basecheck' onchange='baseChange(this); return false;'")
-            out.write("' id='bases:"+id+"'></input>")
+            out.write(" id='bases:"+id+"'></input>")
             out.write(name+ " ")
             out.write(map.base.root.find("./cc:PPReference/cc:ReferenceTable/cc:PPVersion",PPObject.NS).text+ "<br/>\n")
             # for module in map.modules:
@@ -233,7 +233,7 @@ if __name__ == "__main__":
       </div>
       <img style="margin: auto; display: block;" src="https://www.niap-ccevs.org/assets/images/bnr2015.home.jpg" alt="NIAP"></img>
       <div class="basepane">
-        <h1>Security Target Worksheet"""+ teststring+"""</h1></td>
+        <h1>Security Target Worksheet"""+ teststring+"""</h1>
       <div class='warning-pane'>
         <noscript><h2 class="warning">This page requires JavaScript.</h2></noscript>
            <h2 class="warning" id='url-warning' style="display: none;">

@@ -463,7 +463,7 @@ class PP:
             if node.text: ret = escape(node.text)
             for child in node:
                 ret+=self.handle_node(child, show_text)
-                if child.tail: ret+=child.tail
+                if child.tail: ret+= escape(child.tail)
         else:
             for child in node:
                 ret+=self.handle_node(child, show_text)

@@ -109,16 +109,6 @@ function performActionOnElements(elements, fun){
     }
 }
 
-var prevCheckbox = false;
-/**
- *
- */
-function isPrevCheckbox(elem){
-    var ret = prevCheckbox;
-    prevCheckbox = false;
-    return ret;
-}
-
 
 
 // elem is a component element
@@ -319,7 +309,7 @@ function handleXmlReport(){
 function generateReport(){
     var report = LT+"?xml version='1.0' encoding='utf-8'?>\n"
     var aa;
-    report += LT+"report xmlns='https://niap-ccevs.org/cc/pp/report/v1'>"
+    report += LT+"cc:report xmlns='http://www.w3.org/1999/xhtml' xmlns:cc='https://niap-ccevs.org/cc/pp/report/v1'>"
     var baseId=getAppliedBaseId();
     if(baseId==null) return;
     report += harvestSection(elById("base:"+baseId));
@@ -327,35 +317,35 @@ function generateReport(){
     for(aa=0; aa<modIds.length; aa++){
 	report += harvestSection(elById("module:"+modIds[aa]));
     }
-    report += LT+"/report>"							 
+    report += LT+"/cc:report>"							 
     return report;
 }
 
 function harvestSection(section){
-    var ret=LT+"section>\n";
-    ret += LT+"name>"+section.firstElementChild.innerHTML+LT+"/name>\n";
+    var ret=LT+"cc:section>\n";
+    ret += LT+"cc:name>"+section.firstElementChild.innerHTML+LT+"/cc:name>\n";
     var aa;
     var comps=subElsByCls(section,"component");
     for(aa=0; aa<comps.length; aa++){
         if(!isApplied(comps[aa])) continue;
-        ret+="<component>\n   <name>"
+        ret+="<cc:component>\n   <cc:name>"
         ret+=subElsByCls(comps[aa], "f-comp-title")[0].innerHTML;
-        ret+="</name>\n";
+        ret+="</cc:name>\n";
         var reqs = subElsByCls(comps[aa], "requirement");
 	ret+=harvestReqs(reqs)
-        ret+="</component>";
+        ret+="</cc:component>";
     }
-    ret += LT+"/section>\n"
+    ret += LT+"/cc:section>\n"
     return ret;
 }
 function harvestReqs(reqs){
     var ret="";
     var aa;
     for(aa=0; aa<reqs.length; aa++){
-	ret+="<requirement>\n   <name>";
+	ret+="<cc:requirement>\n   <cc:name>";
 	var title = subElsByCls(reqs[aa], "f-el-title");
 	ret+=title[0].innerHTML;
-	ret+="</name>\n"
+	ret+="</cc:name>\n"
 	// Get the requirement and replace all extra spaces 
 	var wordsEl=subElsByCls(reqs[aa], "words")[0];
 	var words=getRequirement(wordsEl);
@@ -366,11 +356,11 @@ function harvestReqs(reqs){
 	ret+=words;
 	var next = reqs[aa].nextElementSibling;
 	if(next != null && next.classList.contains("aactivity")){
-	    ret += "<aactivity>"
+	    ret += "<cc:aactivity>"
 		+ getRequirement(next) 
-		+ "</aactivity>";
+		+ "</cc:aactivity>";
 	}
-	ret+="</requirement>\n"
+	ret+="</cc:requirement>\n"
     }
     return ret;
 }
@@ -392,6 +382,17 @@ function convertToXmlContent(val){
     return ret;
 }
 
+var prevCheckbox = false;
+/**
+ *
+ */
+function isPrevCheckbox(elem){
+    var ret = prevCheckbox;
+    prevCheckbox = false;
+    return ret;
+}
+
+
 function getRequirement(node){
     var ret = ""
     // If it's an element
@@ -402,43 +403,43 @@ function getRequirement(node){
         }
         if(isCheckbox(node)){
             if(node.checked){
-                ret+=LT+"selectable index='"+node.getAttribute('data-rindex')+"'>"; 
+                ret+=LT+"cc:selectable index='"+node.getAttribute('data-rindex')+"'>"; 
 		// Checkbox precedes the 
                 // Like a fake recurrence call here
                 ret+=getRequirement(node.nextSibling);
-                ret+=LT+"/selectable>";
+                ret+=LT+"/cc:selectable>";
             }
             // Skip the next check.
             prevCheckbox=true;
         }
         else if(node.classList.contains("selectables")){
-            ret+=LT+"selectables>"
+            ret+=LT+"cc:selectables>"
             ret+=getRequirements(node.children);
-            ret+=LT+"/selectables>"
+            ret+=LT+"/cc:selectables>"
         }
         else if(node.classList.contains("assignment")){
             var val = "";
             if(node.value){
                 val=node.value;
             }
-            ret+=LT+"assignment>";
+            ret+=LT+"cc:assignment>";
             ret+=convertToXmlContent(val);
-            ret+=LT+"/assignment>\n";
+            ret+=LT+"/cc:assignment>\n";
         }
         else if(node.classList.contains('mfun-table')){
-            ret += LT+"management-function-table>"
+            ret += LT+"cc:management-function-table>"
             var rows = node.getElementsByTagName("tr");
             for(var row=0; rows.length>row; row++){
-                ret += LT+"row>";
+                ret += LT+"cc:row>";
                 var cols=rows[row].children;
                 for( var col=0; cols.length>col; col++){
-                    ret += LT+"val>"; 
+                    ret += LT+"cc:val>"; 
 		    ret += getRequirements(cols[col].childNodes);
-                    ret += LT+"/val>";
+                    ret += LT+"/cc:val>";
                 }
-                ret += LT+"/row>\n";
+                ret += LT+"/cc:row>\n";
             }
-            ret += LT+"/management-function-table>";
+            ret += LT+"/cc:management-function-table>";
         }
 	else if(isSelector(node)){
 	    ret+=getRequirement(node.children[node.selectedIndex]);
@@ -769,7 +770,10 @@ function handleSelections(){
 }
 
 /**
- * 
+ * @returns an array of tuples. Each tuple is the new selections
+ * that have been (potentially) activated by enabling this component. 
+ * The tuple is composed of the ID of the parent and the local ID.
+ * (i.e. FullId.split(":"))
  */
 function enableDominantComponent(reqId){
     var comps = elsByCls(reqId);
@@ -820,10 +824,9 @@ function isApplied(el){
 	el = el.parentElement;
     }
     // If the component isn't visible
-    if(!isVisible(el)) return false;
-
+    if(!isVisible(el))                            return false;
     // If the component
-    if(el.classList.contains(DISABLED))         return false;
+    if(el.classList.contains(DISABLED))           return false;
     if(el.classList.contains('modifiedbymodule')) return false;
 
     return true;
@@ -903,7 +906,6 @@ function handleKey(event){
 	return "";
     }
     var key = event.which || event.keyCode;
-
 
     var curr = document.activeElement;
     var comps = elsByCls('component');
