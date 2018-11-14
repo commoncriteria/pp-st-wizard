@@ -321,7 +321,8 @@ class PP:
             if "pre" in node.attrib:
                 prefix=node.attrib["pre"]
             idAttr=self.to_global_id(node.attrib["id"])
-            ret="<span class='ctr' data-myid='"+idAttr+"+data-counter-type='ct-"
+#            ret="<span class='ctr' data-myid='"+idAttr+"'+data-counter-type='ct-"
+            ret="<span class='ctr' data-counter-type='ct-"
             ret+=ctrtype+"' id='cc-"+idAttr+"'>\n"
             ret+=prefix
             ret+="<span class='counter'>"+idAttr+"</span>"
