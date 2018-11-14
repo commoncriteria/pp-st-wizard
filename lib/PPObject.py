@@ -295,7 +295,7 @@ class PP:
             return ret
 
         elif node.tag == cc("section"):
-            idAttr=node.attrib["id"]
+            idAttr=self.to_global_id(node.attrib["id"])
             ret =""
             if "SFRs" == idAttr or "SARs" == idAttr:
                 ret+="<h3>"+node.attrib["title"]+"</h3>\n"
@@ -303,9 +303,10 @@ class PP:
             return ret
 
         elif node.tag == cc("ctr-ref") and show_text:
-            refid=node.attrib['refid']
+            localid=node.attrib['refid']
+            refid=self.to_global_id(localid)
             ret="<a onclick='showTarget(\"cc-"+refid+"\")' href=\"#cc-"+refid+"\" class=\"cc-"+refid+"-ref\">"
-            target=self.root.find(".//*[@id='"+refid+"']")
+            target=self.root.find(".//*[@id='"+localid+"']")
             # What is prefix for?
             prefix=target.attrib["ctr-type"]+" "
             if "pre" in target.attrib:
@@ -321,7 +322,6 @@ class PP:
             if "pre" in node.attrib:
                 prefix=node.attrib["pre"]
             idAttr=self.to_global_id(node.attrib["id"])
-#            ret="<span class='ctr' data-myid='"+idAttr+"'+data-counter-type='ct-"
             ret="<span class='ctr' data-counter-type='ct-"
             ret+=ctrtype+"' id='cc-"+idAttr+"'>\n"
             ret+=prefix
@@ -488,6 +488,9 @@ class PP:
                 reqs.append(slaveId)
                 self.selMap[selId]=reqs
 
+    def to_worksheet_content(self):
+        
+        return self.handle_contents(self.root, False)
 
 ###############################################
 #           Test

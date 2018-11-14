@@ -138,6 +138,41 @@ function fixToolTips(){
   }
 }
 
+
+//////////////////////////////////////////////////
+// Stolen from the regular PP project
+//////////////////////////////////////////////////
+function changeMyCounter(subroot, val){
+    var bb;
+    for(bb=0; bb!=subroot.childNodes.length; bb++){
+    	if( subroot.childNodes[bb] instanceof Element &&
+    	    "counter"==subroot.childNodes[bb].getAttribute("class")){
+    	    subroot.childNodes[bb].innerHTML = val;
+    	    return;
+    	}
+    }
+}
+
+function fixCounters(){
+    var figs = document.getElementsByClassName("ctr");
+    var occurs = {};                                         // Map that stores how many times we've seen each thing
+    var aa;
+    for(aa=0; aa!= figs.length; aa++){                       // Go through every counted object
+    	var ct = figs[aa].getAttribute("data-counter-type");  // Get which counter type it is
+    	var curr = occurs[ct]!=null?parseInt(occurs[ct]):1;   // Figure out how many times we've seen it
+    	occurs[ ct ] = curr + 1;                              // Save off increment for next time
+    	changeMyCounter( figs[aa], curr);
+
+    	var figId = figs[aa].id
+    	var figRefs = document.getElementsByClassName(figId+"-ref");
+    	var bb;
+        for(bb=0; bb!=figRefs.length; bb++){
+    	    changeMyCounter(figRefs[bb], curr);
+    	}
+    }
+}
+
+
 /**
  * The initialization function.
  */
@@ -156,6 +191,7 @@ function init(){
 	setTimeout(killFade, 2000);
     }
     fixToolTips();
+    fixCounters();
     prefix=url.searchParams.get("prefix");
     if (prefix==null) prefix="";
     cookieJar = readAllCookies();

@@ -115,7 +115,7 @@ class PPMap:
             out.write("<div class='hidable dep:"+id+"' id='base:"+id+"'>");
             out.write("<h2>"+name+"</h2>")
             obj = map.base
-            out.write(obj.handle_contents(obj.root, False))
+            out.write(obj.to_worksheet_content() )
             out.write("</div>")
 
         # Run through all the modules
@@ -125,7 +125,7 @@ class PPMap:
             out.write("<div class='hidable dep:"+id + "' id='module:"+id+"'>");
             out.write("<h2>"+mod.root.attrib["name"]+"</h2>")
             obj = mod
-            out.write(obj.handle_contents(obj.root, False))
+            out.write(obj.to_worksheet_content())
             out.write("</div>")
 
             
