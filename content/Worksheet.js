@@ -410,13 +410,6 @@ function getRequirements(nodes){
     return ret;
 }
 
-function convertToXmlContent(val){
-    var ret = val;
-    ret = ret.replace(/\x26/g, AMPERSAND+'amp;');
-    ret = ret.replace(/\x3c/g, AMPERSAND+'lt;');
-    ret = ret.replace(/\]\]\>/g, ']]'+AMPERSAND+'gt;');
-    return ret;
-}
 
 var prevCheckbox = false;
 /**
@@ -459,7 +452,7 @@ function getRequirement(node){
                 val=node.value;
             }
             ret+=LT+"cc:assignment>";
-            ret+=convertToXmlContent(val);
+            ret+=escapeXml(val);
             ret+=LT+"/cc:assignment>\n";
         }
         else if(node.classList.contains('mfun-table')){
