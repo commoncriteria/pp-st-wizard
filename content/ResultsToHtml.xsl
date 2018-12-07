@@ -20,6 +20,7 @@
 	<xsl:apply-templates/>
   </xsl:template>
 
+
   <xsl:template match="cc:section/cc:name">
     <h1><xsl:apply-templates/></h1>
   </xsl:template>
@@ -40,9 +41,16 @@
   <!-- -->
   <xsl:template match="cc:selectables">[<span class="selection"><xsl:choose>      
     <!-- If the selection has a nested selection -->
-    <xsl:when test=".//cc:selectables"><ul><xsl:for-each select="cc:selectable"><li><i><xsl:apply-templates/></i><xsl:call-template name="commaifnotlast"/></li></xsl:for-each></ul></xsl:when>
-   <xsl:otherwise><xsl:for-each select="cc:selectable"><i><xsl:apply-templates/></i><xsl:call-template name="commaifnotlast"/></xsl:for-each></xsl:otherwise>
+    <xsl:when test=".//cc:selectables"><ul><xsl:for-each select="cc:selectable|htm:UL/htm:LI/cc:selectable"><li><i><xsl:apply-templates/></i><xsl:call-template name="commaifnotlast"/></li></xsl:for-each></ul></xsl:when>
+   <xsl:otherwise><xsl:for-each select="cc:selectable|htm:UL/htm:LI/cc:selectable"><i><xsl:apply-templates/></i><xsl:call-template name="commaifnotlast"/></xsl:for-each></xsl:otherwise>
   </xsl:choose></span>]</xsl:template>
+
+  <!-- <xsl:template name="handle_selectables"> -->
+  <!--   <xsl:choose> -->
+  <!--     <xsl:when test="UL"><xsl:for-each select="UL/LI"><li><i><xsl:apply-templates/></i></li>"</xsl:for-each></xsl:when> -->
+  <!--     <xsl:otherwise><xsl:for-each select="cc:selectable"><i><xsl:apply-templates/></i><xsl:call-template name="commaifnotlast"/></xsl:for-each></xsl:otherwise> -->
+  <!--   </xsl:choose> -->
+  <!-- </xsl:template> -->
 
   <xsl:template match="cc:assignment">[<span class="assignment"><xsl:apply-templates/></span>]</xsl:template>
 

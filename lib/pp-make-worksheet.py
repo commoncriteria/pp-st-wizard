@@ -30,7 +30,7 @@ class PPMap:
     def __init__(self):
         self.base=None
         self.modules=[]
-
+    
     def make_js_selmap():
         ret="var selMap={"
         for name in PPMap.basenameToDefs:
@@ -115,7 +115,8 @@ class PPMap:
             out.write("<div class='hidable dep:"+id+"' id='base:"+id+"'>");
             out.write("<h2>"+name+"</h2>")
             obj = map.base
-            out.write(obj.to_worksheet_content() )
+            out.write(obj.get_worksheet_notes())
+            out.write(obj.to_worksheet_content())
             out.write("</div>")
 
         # Run through all the modules
@@ -124,9 +125,11 @@ class PPMap:
             id=PPObject.to_id(name)
             out.write("<div class='hidable dep:"+id + "' id='module:"+id+"'>");
             out.write("<h2>"+mod.root.attrib["name"]+"</h2>")
-            obj = mod
+            obj=mod
             out.write(obj.to_worksheet_content())
             out.write("</div>")
+
+
 
             
 ###############################################
@@ -136,7 +139,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 6:
         print("Args: " + str(len(sys.argv)))
         #        0       1          2          3          4          5       6
-        print("Usage: <js-file> <css-file> <xsl-file> <out-file   <in-1> [<in-2> [...]]")
+        print("Usage: <js-file> <css-file> <xsl-file> <out-file>  <in-1> [<in-2> [...]]")
         sys.exit(0)
 
     jsfile=sys.argv[1]

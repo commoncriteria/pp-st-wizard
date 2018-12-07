@@ -84,6 +84,15 @@ class PP:
         # :Basename (Used when diving into the tree)
         self.basename=""
 
+    def get_worksheet_notes(self):
+        notes=self.root.findall(".//cc:worksheetnotes",  NS)
+        if len(notes)==0:
+            return ""
+        ret="<div class='notes'>"
+        for note in notes:
+            ret+=self.handle_contents(note, True)
+        ret+="</div>"
+        return ret
 
     def get_js_selmap(self):
         ret="'"+self.id+"':{\n"
@@ -360,6 +369,12 @@ class PP:
         ret+="<div class='f-el-title'>"+ccid.upper()+"</div>"
         ret+="<div class='words'>"
         ret+=self.handle_contents(node, True)
+        notes=self.up(node).findall(".//cc:wsn",  NS)
+        if len(notes)>0:
+            ret+="<div class='notes'>"
+            for note in notes:
+                ret+=self.handle_contents(note, True)
+            ret+="</div>"
         ret+="</div>\n"
         ret+="</div><!-- End: "+id+" -->\n"
         return ret
@@ -481,7 +496,8 @@ class PP:
             # req=element.attrib["req"]
             selIds=element.attrib["ids"]
             slaveId=self.up(element).attrib["id"]
-            for selId in selIds.split(','):
+            for selIdWSpace in selIds.split(','):
+                selId=selIdWSpace.strip()
                 if selId in self.selMap:
                     reqs =self.selMap[selId]
                 else: reqs=[]
