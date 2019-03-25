@@ -14,8 +14,10 @@ Prequisites
 
 For those cloning the repository, the command line for this tool is quite simple:
 ````   
-   pp-master-builder &lt;in-1> [&lt;in-2> [&lt;in-3> [...]]]
+   pp-master-builder <in-1> [<in-2> [<in-3> [...]]]
 ````
+Where in-* is any of the various input xml files (PPs, Modules, Packages, TDs).
+
 To build the project, just run
 
 ````
