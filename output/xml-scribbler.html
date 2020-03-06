@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type"></meta>
+      <meta content="utf-8" http-equiv="encoding"></meta>
+
+      <title>XML Scratchpad</title>
+
+      <link rel="stylesheet" href="https://codemirror.net/lib/codemirror.css"></link>
+      <link rel="stylesheet" href="https://codemirror.net/doc/docs.css"></link>
+      <link rel="stylesheet" href="https://codemirror.net/addon/hint/show-hint.css"></link>
+
+
+      <!-- Create a simple CodeMirror instance -->
+      <script src="https://codemirror.net/lib/codemirror.js" type="text/javascript"></script>
+      <script src="https://codemirror.net/mode/xml/xml.js" type="text/javascript"></script>
+      <script src="https://codemirror.net/addon/hint/show-hint.js" type="text/javascript"></script>
+      <script src="https://codemirror.net/addon/hint/xml-hint.js"  type="text/javascript"></script>
+
+      <script src="https://syssgx.github.io/xml.js/js/xmllint.js" type="text/javascript"></script>
+      <script type="text/javascript"> 
+      /* <![CDATA[ */
+      var xml_tbox;
+      var schema_tbox;
+
+      function handleOnLoad(){
+	  var xml_input = document.getElementById('xml_input');
+	  xml_tbox = CodeMirror.fromTextArea(xml_input, {
+	     lineNumbers: true,
+	     mode: "xml",
+             hintOptions: {schemaInfo: tags},
+             extraKeys: {
+               "F11": handleValidateClick,
+                 "'<'": completeAfter,
+               "'/'": completeIfAfterLt,
+               "' '": completeIfInTag,
+               "'='": completeIfInTag,
+               "Ctrl-Space": "autocomplete"
+             },
+	  });
+
+	  xml_input = document.getElementById('schema_input');
+	  schema_tbox = CodeMirror.fromTextArea(xml_input, {
+	     lineNumbers: true,
+	     mode: "xml"
+	  });
+      }
+      function handleValidateClick(){
+         var args = {};
+	     args.xml=xml_tbox.getValue();
+	     args.schema= schema_tbox.getValue();
+         args.arguments =["--noout", "--schema", "schema", "text"];
+         var blah = validateXML(args);
+         document.getElementById("output").value = blah;
+         console.log(blah);
+      }
+
+      var dummy = {
+        attrs: {
+          color: ["red", "green", "blue", "purple", "white", "black", "yellow"],
+          size: ["large", "medium", "small"],
+          description: null
+        },
+        children: []
+      };
+
+      var tags = {
+        "!top": ["top"],
+        "!attrs": {
+          id: null,
+          class: ["A", "B", "C"]
+        },
+        top: {
+          attrs: {
+            lang: ["en", "de", "fr", "nl"],
+            freeform: null
+          },
+          children: ["animal", "plant"]
+        },
+        animal: {
+          attrs: {
+            name: null,
+            isduck: ["yes", "no"]
+          },
+          children: ["wings", "feet", "body", "head", "tail"]
+        },
+        plant: {
+          attrs: {name: null},
+          children: ["leaves", "stem", "flowers"]
+        },
+        wings: dummy, feet: dummy, body: dummy, head: dummy, tail: dummy,
+        leaves: dummy, stem: dummy, flowers: dummy
+      };
+      function completeAfter(cm, pred) {
+        var cur = cm.getCursor();
+        if (!pred || pred()) setTimeout(function() {
+          if (!cm.state.completionActive)
+            cm.showHint({completeSingle: false});
+        }, 100);
+        return CodeMirror.Pass;
+      }
+
+      function completeIfAfterLt(cm) {
+        return completeAfter(cm, function() {
+          var cur = cm.getCursor();
+          return cm.getRange(CodeMirror.Pos(cur.line, cur.ch - 1), cur) == "<";
+        });
+      }
+
+      function completeIfInTag(cm) {
+        return completeAfter(cm, function() {
+          var tok = cm.getTokenAt(cm.getCursor());
+          if (tok.type == "string" && (!/['"]/.test(tok.string.charAt(tok.string.length - 1)) || tok.string.length == 1)) return false;
+          var inner = CodeMirror.innerMode(cm.getMode(), tok.state).state;
+          return inner.tagName;
+        });
+      }
+
+
+      /* ]]>*/
+
+    </script>
+  </head>
+  <body onload="handleOnLoad()">
+    <textarea id="xml_input">
+&lt;?xml version="1.0"?>
+&lt;Song>&lt;Title>Abc&lt;/Title>&lt;Year>1927&lt;/Year>&lt;Artist>GGG&lt;/Artist>&lt;/Song></textarea>
+    <br/>
+    <button onclick="handleValidateClick()">Validate</button>
+    <textarea id="output"></textarea>  
+    <br/>
+      
+    <textarea id="schema_input">
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	&lt;xs:element name="Song">
+		&lt;xs:complexType>
+			&lt;xs:sequence>
+				&lt;xs:element name="Title" type="xs:string"/>
+				&lt;xs:element name="Year" type="xs:gYear"/>
+				&lt;xs:element name="Artist" type="xs:string"/>
+			&lt;/xs:sequence>
+		&lt;/xs:complexType>
+	&lt;/xs:element>
+&lt;/xs:schema>
+    </textarea>
+
+
+  </body>
+</html>
