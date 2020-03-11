@@ -9,7 +9,22 @@
       <link rel="stylesheet" href="https://codemirror.net/lib/codemirror.css"></link>
       <link rel="stylesheet" href="https://codemirror.net/doc/docs.css"></link>
       <link rel="stylesheet" href="https://codemirror.net/addon/hint/show-hint.css"></link>
+      <style>
+          [draggable=true] {
+            cursor: move;
+          }
 
+.resizable {
+  overflow: scroll;
+  resize: both;
+  max-width: 100%;
+  max-height: 460px;
+  border: 1px solid black;
+  min-width: 50px;
+  min-height: 50px;
+  background-color: skyblue;
+          }
+      </style>
 
       <!-- Create a simple CodeMirror instance -->
       <script src="https://codemirror.net/lib/codemirror.js" type="text/javascript"></script>
@@ -38,15 +53,10 @@
 </grammar>";
       function handleOnLoad(){
           var xml_input = document.getElementById('xml_input');
-
-          if (typeof(Storage) !== "undefined") {
-//             alert("We have storage.");// Code for localStorage/sessionStorage.
-          }
           xml_tbox = CodeMirror.fromTextArea(xml_input, {
 	         lineNumbers: true,
 	         mode: "xml",
              hintOptions: {schemaInfo: tags},
-             viewportMargin: Infinity,
               extraKeys: {
                "F11": handleValidateClick,
                  "'<'": completeAfter,
@@ -56,15 +66,30 @@
                "Ctrl-Space": "autocomplete"
              },
 	      });
+          xml_tbox.setSize("100%", "200px");
+          if (typeof(Storage) !== "undefined") {
+              var prev_content = sessionStorage.getItem("xml_content");
+              if (prev_content != null) xml_tbox.setValue(prev_content);
+              var size = sessionStorage.getItem("codebox_size");
+              if (size != null) xml_tbox.setSize(null, size+"px");
+//             alert("We have storage.");// Code for localStorage/sessionStorage.
+          }
+
       }
+      function scrollCodeTo(num){
+         xml_tbox.setCursor({line: num-1});
+      }
+          
       function handleValidateClick(){
          var args = {};
 	     args.xml=xml_tbox.getValue();
-	     args.schema= schema_text;
+         sessionStorage.setItem("xml_content", args.xml);
+         args.schema= schema_text;
          args.arguments =["--noout", "--relaxng", "schema", "text"];
-         var blah = validateXML(args);
-         document.getElementById("output").value = blah;
-         console.log(blah);
+         var results = validateXML(args);
+         results = results.replace(/^text\:(\d+)\:/g, "<span style='bgcolor: blue' onclick='scrollCodeTo($1)'>input:$1:</span> ")
+         document.getElementById("output").innerHTML = results;
+         
       }
 
       var dummy = {
@@ -128,23 +153,23 @@
         });
       }
 
-
+      function handleSizeChange(){
+          var siz = document.getElementById("sizeField").value;
+          xml_tbox.setSize(null, siz);
+          localStorage.setItem("codebox_size", siz);      
+      }
+          
       /* ]]>*/
 
     </script>
   </head>
   <body onload="handleOnLoad()">
-    <table>
-        <tr>
-            <td>
-               <button onclick="handleValidateClick()">Validate</button>
-            </td>
-            <td>
-                <textarea rows="10" cols="70" id="output"></textarea>  
-                <br/>
-                <textarea class=".CodeMirror" id="xml_input"></textarea>
-            </td>
-        </tr>
-    </table>
+     <input title="Size" id="sizeField" type="text" onchange="handleSizeChange();"/> 
+      <br/>
+      <button onclick="handleValidateClick()">Validate</button>
+      <div id="output" class="resizable"></div>
+     <br/>    
+    <textarea rows="10"  id="xml_input"></textarea>
+      
   </body>
 </html>
