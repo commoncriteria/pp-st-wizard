@@ -4,7 +4,9 @@ graph LR
     OSXML[OperatingSystem.xml] --> OST{Transforms} --> OSPP[GPOS PP]
     TLS_XML[tls.xml] --> TLS_T{Transforms} --> TLS_PP[TLS PP]
 
-    TLS_XML --> STWIZ
+    TLS_XML --> STWIZ --> STAuthor( ST Author )
+    STAuthor --> ST[ST Document]
+    STAuthor --> EAs[List of EAs]
     OSXML   --> STWIZ((ST Wizard))
     APP_XML --> STWIZ
     SSH_XML --> STWIZ
